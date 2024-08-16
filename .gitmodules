@@ -1,0 +1,3 @@
+[submodule "submodules/xbase"]
+	path = submodules/xbase
+	url = https://github.com/Medialooks-LLC/xbase.git
