@@ -39,7 +39,7 @@ public:
     /// @brief Move constructor
     XTimed(XTimed&&) noexcept = default;
     /// @brief Copy constructor
-    XTimed(const XTimed&)     = default;
+    XTimed(const XTimed&) = default;
 
     /**
      * @brief Move constructor initializing the XTimed with a given TValue and current timestamp.
@@ -69,7 +69,6 @@ public:
     XTimed& operator=(const XTimed& _val)     = default;
     XTimed& operator=(XTimed&& _val) noexcept = default;
 
-  
     ///@name TClock helper methods
     ///@{
     /**
@@ -87,10 +86,7 @@ public:
      * @param _msec The time in milliseconds.
      * @return The equivalent time in ticks.
      */
-    static int64_t MsecToTicks(double _msec)
-    {
-        return static_cast<int64_t>(_msec * TClock::TicksPerSecond() / 1'000);
-    }
+    static int64_t MsecToTicks(double _msec) { return static_cast<int64_t>(_msec * TClock::TicksPerSecond() / 1'000); }
     /**
      * @brief Static helper function converting ticks to milliseconds.
      * @param _timestamp The time in ticks.
@@ -112,7 +108,7 @@ public:
      * @brief Checks if the timestamp is absent (initialization value).
      * @return true if the timestamp is absent, false otherwise.
      */
-    bool    TimeIsAbsent() const { return timestamp_ == kAbsentRT; }
+    bool TimeIsAbsent() const { return timestamp_ == kAbsentRT; }
     /**
      * @brief Calculates the elapsed time in ticks between the current timestamp and the stored one.
      * @return The elapsed time in ticks.

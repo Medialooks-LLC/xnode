@@ -3,7 +3,7 @@
 #include "xnode_functions.h"
 #include "xnode_json.h"
 
-// For XNode::counter()
+// For XNode::Counter()
 #include "../src/xnode/impl/xnode_impl.h"
 
 #include <gtest/gtest.h>
@@ -119,7 +119,6 @@ TEST(xnode_tests, clone_compare)
     cmp_res = xnode::Compare(node_clone, node_map_sp, true);
     EXPECT_EQ(cmp_res, 0);
 }
-
 
 TEST(xnode_tests, clone_with_const_node)
 {
@@ -753,53 +752,6 @@ TEST(xnode_tests, node_parents_test_w_clear)
         EXPECT_FALSE(child_sp->ParentGet());
 }
 
-TEST(xnode_tests, json_tests)
-{
-    auto node_map_sp = xnode::Create(INode::NodeType::Map);
-    xnode::Set(node_map_sp, XPath("node1::subnode", "next", "value"), 999);
-    xnode::Set(node_map_sp, XPath("node1::subnode", "next2", "value"), 99.0);
-    xnode::Set(node_map_sp, XPath("node1::subnode", "next3::subnext", "zzz"), "TEST_vs1234");
-    xnode::Set(node_map_sp, "node1::xxx::value", 99.0);
-    xnode::Set(node_map_sp, "node2::null", nullptr);
-    xnode::Set(node_map_sp, "int_val", 10);
-    xnode::Set(node_map_sp, "uint_val", 10U); // todo: ULL for gcc
-    auto node_array = xnode::NodeGet(node_map_sp, "node1::array", INode::NodeType::Array);
-    ASSERT_TRUE(node_array);
-    node_array->Insert(kIdxEnd, 123);
-    node_array->Insert(kIdxEnd, "string");
-    node_array->Insert(kIdxEnd, 123.456);
-    node_array->Insert(kIdxEnd, nullptr);
-    node_array->Insert(kIdxEnd, true);
-    node_array->Insert(kIdxEnd, std::numeric_limits<uint64_t>::max()); // CHECK !!!
-    node_array->Insert(kIdxEnd, std::numeric_limits<int64_t>::min());
-    node_array->Insert(kIdxBegin, "first");
-    node_array->Insert(1, "second");
-
-    auto str = xnode::ToJson(node_map_sp, nullptr, xnode::JsonFormat::kOneLineArrays);
-    std::cout << "ORIGINAL:" << str << std::endl;
-    EXPECT_FALSE(str.empty());
-
-    auto [node_check, err_pos] = xnode::FromJson(str);
-    ASSERT_TRUE(node_check);
-    str = xnode::ToJson(node_check, nullptr, xnode::JsonFormat::kOneLineArrays);
-    std::cout << "CONVERTED:" << str << std::endl;
-
-    EXPECT_EQ(err_pos, 0);
-    size_t zDiff   = 0;
-    auto   cmp_res = xnode::Compare(
-        node_map_sp,
-        node_check,
-        true,
-        [&](const INode::SPtrC& ncp, const XKey& key, const XValueRT& left, const XValueRT& right) {
-            std::cout << "DIFF:" << key.StringGet().value_or("-") << "/idx:" << key.IndexGet().value_or(0)
-                      << " values:" << left.String() << " " << right.String() << std::endl;
-            ++zDiff;
-            return false;
-        });
-
-    EXPECT_EQ(zDiff, 0);
-}
-
 TEST(xnode_tests, array_tests)
 {
     auto node_map_sp = xnode::Create(INode::NodeType::Map);
@@ -992,21 +944,23 @@ TEST(xnode_tests, erasing_via_each_history)
     EXPECT_EQ(counter, 3);
 }
 
-TEST(xnode_tests, node_parent_same) {
+TEST(xnode_tests, node_parent_same)
+{
 #ifndef _DEBUG
-    {auto node_map_sp = xnode::Create(INode::NodeType::Map, "root");
-auto [ok, prev] = node_map_sp->ParentSet(node_map_sp);
-EXPECT_EQ(ok, false);
-EXPECT_EQ(prev, node_map_sp);
+    {
+        auto node_map_sp = xnode::Create(INode::NodeType::Map, "root");
+        auto [ok, prev]  = node_map_sp->ParentSet(node_map_sp);
+        EXPECT_EQ(ok, false);
+        EXPECT_EQ(prev, node_map_sp);
 
-ok = node_map_sp->Set("123", node_map_sp).first;
-EXPECT_EQ(ok, false);
+        ok = node_map_sp->Set("123", node_map_sp).first;
+        EXPECT_EQ(ok, false);
 
-auto res = node_map_sp->Insert("1234", node_map_sp);
-EXPECT_EQ(res.succeeded, false);
-}
+        auto res = node_map_sp->Insert("1234", node_map_sp);
+        EXPECT_EQ(res.succeeded, false);
+    }
 #endif
-// ASSERT_EQ(impl::XNode::counter(), 0);
+    // ASSERT_EQ(impl::XNode::Counter(), 0);
 }
 TEST(xnode_tests, node_parent_circular_set)
 {
@@ -1071,7 +1025,83 @@ TEST(xnode_tests, node_parent_circular_set)
     }
 #endif
 
-    // ASSERT_EQ(impl::XNode::counter(), 0);
+    // ASSERT_EQ(impl::XNode::Counter(), 0);
+}
+
+TEST(xnode_tests, wrapped_tests)
+{
+    std::vector<INode::SPtrC> vec_const;
+    std::vector<INode::SPtr>  vec_non_cont;
+    const size_t              items_count = 16;
+    auto                      node_array = xnode::CreateArray();
+    for (size_t z = 0; z < items_count; ++z) {
+        INode::SPtr node_check;
+        if (z % 4 == 0)
+            node_check = xnode::CreateMap({}, "empty_map_name_" + std::to_string(z));
+        else if (z % 4 == 1)
+            node_check = xnode::CreateMap({{"int", 100 + z}, {"str", "Test Str" + std::to_string(z)}},
+                                          "map_name_" + std::to_string(z));
+        else if (z % 4 == 2)
+            node_check = xnode::CreateArray({}, "array_empty_name_" + std::to_string(z));
+        else
+            node_check = xnode::CreateArray({"str" + std::to_string(z), 1000 + z, true},
+                                            "array_name_" + std::to_string(z));
+
+        if (z < items_count / 2) {
+            xnode::ArrayInsertWrapped(node_array, node_check);
+            vec_const.push_back(node_check);
+            vec_non_cont.push_back(node_check);
+        }
+        else {
+            xnode::ArrayInsertWrapped(node_array, INode::SPtrC(node_check));
+            vec_const.push_back(node_check);
+        }
+    }
+
+    auto json                  = xnode::ToJson(node_array);
+    std::cout << json;
+    auto node_array_serialized = xnode::FromJson(json).first;
+
+    auto vec_original_get      = xnode::ChildNodesGet(node_array, {}, true);
+    auto vec_serialized_get    = xnode::ChildNodesGet(node_array_serialized, {}, true);
+
+    auto cvec_original_get   = xnode::ChildNodesConstGet(node_array, {}, true);
+    auto cvec_serialized_get = xnode::ChildNodesConstGet(node_array_serialized, {}, true);
+
+    // Check const
+    ASSERT_EQ(vec_const.size(), cvec_original_get.size());
+    ASSERT_EQ(vec_const.size(), cvec_serialized_get.size());
+    for (size_t z = 0; z < vec_const.size(); ++z) {
+        ASSERT_TRUE(vec_const[z]);
+        ASSERT_TRUE(cvec_original_get[z]);
+        ASSERT_TRUE(cvec_serialized_get[z]);
+        std::cout << std::endl << "================= idx:" << z << "=================" << std::endl;
+        std::cout << "check: " << vec_const[z]->NameGet() << ":" << xnode::ToJson(vec_const[z]) << std::endl;
+        std::cout << "get orignial:" << cvec_original_get[z]->NameGet() << ":" << xnode::ToJson(cvec_original_get[z])
+                  << std::endl;
+        std::cout << "get serialized:" << cvec_serialized_get[z]->NameGet() << ":"
+                  << xnode::ToJson(cvec_serialized_get[z]) << std::endl;
+
+
+        EXPECT_EQ(vec_const[z]->NameGet(), cvec_original_get[z]->NameGet());
+        EXPECT_EQ(vec_const[z]->NameGet(), cvec_serialized_get[z]->NameGet());
+        EXPECT_EQ(xnode::ToJson(vec_const[z]), xnode::ToJson(cvec_original_get[z]));
+        EXPECT_EQ(xnode::ToJson(vec_const[z]), xnode::ToJson(cvec_serialized_get[z]));
+    }
+
+    // Check non-const
+    ASSERT_EQ(vec_non_cont.size(), vec_original_get.size() / 2);
+    ASSERT_EQ(vec_non_cont.size(), vec_serialized_get.size() / 2);
+    for (size_t z = 0; z < vec_non_cont.size(); ++z) {
+        ASSERT_TRUE(vec_non_cont[z]);
+        ASSERT_TRUE(vec_original_get[z]);
+        ASSERT_TRUE(vec_serialized_get[z]);
+        EXPECT_EQ(vec_non_cont[z]->NameGet(), vec_original_get[z]->NameGet());
+        EXPECT_EQ(vec_non_cont[z]->NameGet(), vec_serialized_get[z]->NameGet());
+        EXPECT_EQ(xnode::ToJson(vec_non_cont[z]), xnode::ToJson(vec_original_get[z]));
+        EXPECT_EQ(xnode::ToJson(vec_non_cont[z]), xnode::ToJson(vec_serialized_get[z]));
+    }
+
 }
 
 // NOLINTEND(*)

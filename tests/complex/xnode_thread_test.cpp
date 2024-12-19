@@ -67,9 +67,9 @@ TEST(xnode_thread_tests, thread_values_ops)
                     break;
                 case 8:
                     node_map_sp->BulkInsert({{keys[10], values[1]},
-                                              {keys[idx2], values[2]},
-                                              {keys[idx], values[3]},
-                                              {keys[14], values[4]}});
+                                             {keys[idx2], values[2]},
+                                             {keys[idx], values[3]},
+                                             {keys[14], values[4]}});
                     break;
                 case 9:
                     chanaged += node_map_sp->KeyChange(keys[idx], keys[idx2]) ? 1 : 0;
@@ -97,7 +97,6 @@ TEST(xnode_thread_tests, thread_values_ops)
                     node_map_sp->BulkErase({idx / 2, idx / 2 + 1, idx / 2 + 2});
                     break;
                 }
-
             }
 
             rounds++;
@@ -135,14 +134,14 @@ TEST(xnode_thread_tests, thread_node_parents_ops)
     auto node_array_sp = xnode::CreateArray({}, "array");
 
     INode::SPtr nodes[] = {xnode::CreateMap({{"name1", "01"}}, "01"),
-                          xnode::CreateMap({{"name2", "02"}}, "02"),
-                          xnode::CreateMap({{"name3", "03"}}, "03"),
-                          xnode::CreateMap({{"name4", "04"}}, "04"),
-                          xnode::CreateMap({{"name5", "05"}}, "05"),
-                          xnode::CreateArray({"arr00", true, "0222"}, "arr_01"),
-                          xnode::CreateArray({"arr01", true, "0222"}, "arr_01"),
-                          xnode::CreateArray({"arr02", nullptr, "0222"}, "arr_02"),
-                          xnode::CreateArray({"arr04", "0222"}, "arr_03")};
+                           xnode::CreateMap({{"name2", "02"}}, "02"),
+                           xnode::CreateMap({{"name3", "03"}}, "03"),
+                           xnode::CreateMap({{"name4", "04"}}, "04"),
+                           xnode::CreateMap({{"name5", "05"}}, "05"),
+                           xnode::CreateArray({"arr00", true, "0222"}, "arr_01"),
+                           xnode::CreateArray({"arr01", true, "0222"}, "arr_01"),
+                           xnode::CreateArray({"arr02", nullptr, "0222"}, "arr_02"),
+                           xnode::CreateArray({"arr04", "0222"}, "arr_03")};
 
     std::atomic_bool stop = {false};
 
@@ -180,7 +179,7 @@ TEST(xnode_thread_tests, thread_node_parents_ops)
                     nodes[idx1]->ParentDetach();
                     break;
                 case 9:
-                    //node_map_sp->Clear();
+                    // node_map_sp->Clear();
                     break;
                 case 10:
                     nodes[idx1]->NameSet("name_" + std::to_string(rand() % 10), true);
@@ -210,18 +209,16 @@ TEST(xnode_thread_tests, thread_node_parents_ops)
         th.join();
 
     std::cout << "rounds:" << std::to_string(rounds.load()) << std::endl;
-    auto improper_map = xnode::ParentsCheck(node_map_sp, true);
-    auto fixed_map    = xnode::ParentsFix(improper_map);
+    auto improper_map = xnode::utility::ParentsCheck(node_map_sp, true);
+    auto fixed_map    = xnode::utility::ParentsFix(improper_map);
     std::cout << "IMPROPER FOUND:" << std::to_string(improper_map.size()) << std::endl;
     std::cout << "IMPROPER FIXED:" << std::to_string(fixed_map.size()) << std::endl;
-    //std::cout << "MAP" << xnode::ToJson(node_map_sp) << std::endl;
-    
-    //std::cout << "ARRAY" << xnode::ToJson(node_array_sp) << std::endl;
+    // std::cout << "MAP" << xnode::ToJson(node_map_sp) << std::endl;
 
-    
+    // std::cout << "ARRAY" << xnode::ToJson(node_array_sp) << std::endl;
 
     std::cout << "FINSIHED" << std::endl;
-    //EXPECT_FALSE(TRUE);
+    // EXPECT_FALSE(TRUE);
 #endif
 }
 
@@ -232,13 +229,13 @@ TEST(xnode_thread_tests, thread_node_parents_ops2)
     auto node_array_sp = xnode::CreateArray({}, "array");
 
     INode::SPtr nodes[] = {xnode::CreateMap({{"name1", "01"}}, "01"),
-                          xnode::CreateMap({{"name2", "02"}}, "02"),
-                          xnode::CreateMap({{"name3", "03"}}, "03"),
-                          xnode::CreateMap({{"name4", "04"}}, "04"),
-                          xnode::CreateMap({{"name5", "05"}}, "05"),
-                          xnode::CreateArray({"arr01", true, "0222"}, "arr_01"),
-                          xnode::CreateArray({"arr02", nullptr, "0222"}, "arr_02"),
-                          xnode::CreateArray({"arr04", "0222"}, "arr_03")};
+                           xnode::CreateMap({{"name2", "02"}}, "02"),
+                           xnode::CreateMap({{"name3", "03"}}, "03"),
+                           xnode::CreateMap({{"name4", "04"}}, "04"),
+                           xnode::CreateMap({{"name5", "05"}}, "05"),
+                           xnode::CreateArray({"arr01", true, "0222"}, "arr_01"),
+                           xnode::CreateArray({"arr02", nullptr, "0222"}, "arr_02"),
+                           xnode::CreateArray({"arr04", "0222"}, "arr_03")};
 
     std::atomic_bool stop = {false};
 
@@ -313,9 +310,9 @@ TEST(xnode_thread_tests, thread_node_parents_ops2)
     for (auto& th : vec_threads)
         th.join();
 
-    //std::cout << "MAP" << xnode::ToJson(node_map_sp) << std::endl;
+    // std::cout << "MAP" << xnode::ToJson(node_map_sp) << std::endl;
 
-    //std::cout << "ARRAY" << xnode::ToJson(node_array_sp) << std::endl;
+    // std::cout << "ARRAY" << xnode::ToJson(node_array_sp) << std::endl;
 
     std::cout << "rounds:" << std::to_string(rounds.load()) << std::endl;
 
@@ -325,14 +322,14 @@ TEST(xnode_thread_tests, thread_node_parents_ops2)
 }
 TEST(xnode_thread_tests, thread_node_complex_ops)
 {
-    auto node_map_sp   = xnode::Create(INode::NodeType::Map, "root");
+    auto node_map_sp = xnode::Create(INode::NodeType::Map, "root");
 
-    size_t              node_names     = 10;
-    size_t              val_names = 30;
-    size_t              depth     = 3;
-    std::atomic_bool stop = {false};
-    std::atomic<size_t> rounds    = 0;
-    auto                pf_thread = [&]() {
+    size_t              node_names = 10;
+    size_t              val_names  = 30;
+    size_t              depth      = 3;
+    std::atomic_bool    stop       = {false};
+    std::atomic<size_t> rounds     = 0;
+    auto                pf_thread  = [&]() {
         XValue prev;
         while (!stop) {
 
@@ -358,7 +355,7 @@ TEST(xnode_thread_tests, thread_node_complex_ops)
                     break;
                 }
                 case 3:
-                    //xnode_erase(node_map_sp, XPath(keys[0]));
+                    // xnode_erase(node_map_sp, XPath(keys[0]));
                     break;
                 case 4:
                     xnode::Erase(node_map_sp, XPath(keys[0], keys[1]));
@@ -374,14 +371,14 @@ TEST(xnode_thread_tests, thread_node_complex_ops)
                     break;
                 }
                 case 7: {
-                    auto json    = xnode::ToJson(node_map_sp);
+                    auto json = xnode::ToJson(node_map_sp);
                     auto node_sp = xnode::NodeGet(node_map_sp, XPath(keys[0], keys[1]), INode::NodeType::Map);
                     ASSERT_TRUE(node_sp);
                     node_sp->ParentDetach();
                     break;
                 }
                 case 8: {
-                    auto json    = xnode::ToJson(node_map_sp);
+                    auto json = xnode::ToJson(node_map_sp);
                     auto node_sp = xnode::NodeGet(node_map_sp, XPath(keys[0], keys[1], keys[2]), INode::NodeType::Map);
                     ASSERT_TRUE(node_sp);
                     node_sp->ParentDetach();
@@ -392,7 +389,6 @@ TEST(xnode_thread_tests, thread_node_complex_ops)
                     xnode::At(node_map_sp, XPath(keys[0], keys[1], keys[2], "array", 5));
                     break;
                 }
-               
             }
 
             rounds++;
@@ -411,7 +407,7 @@ TEST(xnode_thread_tests, thread_node_complex_ops)
     for (auto& th : vec_threads)
         th.join();
 
-    EXPECT_EQ(xnode::ParentsCheck(node_map_sp, true).size(), 0);
+    EXPECT_EQ(xnode::utility::ParentsCheck(node_map_sp, true).size(), 0);
 
     std::cout << "MAP" << xnode::ToJson(node_map_sp) << std::endl;
 

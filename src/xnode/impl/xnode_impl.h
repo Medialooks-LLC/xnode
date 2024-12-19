@@ -62,19 +62,21 @@ class XNode final: public INode, public INodePrivate, public std::enable_shared_
           std::unique_ptr<IParentValidator>&& _parent_validator,
           uint64_t                            _uid,
           std::string_view                    _name);
+
 public:
     static std::shared_ptr<XNode> Create(std::unique_ptr<IContainerMatch>&&  _container_match,
-                                               std::unique_ptr<IParentValidator>&& _parent_validator,
-                                               uint64_t                            _uid,
-                                               std::string_view                    _name)
+                                         std::unique_ptr<IParentValidator>&& _parent_validator,
+                                         uint64_t                            _uid,
+                                         std::string_view                    _name)
     {
-        return std::shared_ptr<XNode> {new XNode(std::move(_container_match), std::move(_parent_validator), _uid, _name)};
+        return std::shared_ptr<XNode> {
+            new XNode(std::move(_container_match), std::move(_parent_validator), _uid, _name)};
     }
 
 #ifdef _DEBUG
     virtual ~XNode() { nodes_counter_.fetch_sub(1); }
 
-    static int64_t counter() { return nodes_counter_.load(); }
+    static int64_t Counter() { return nodes_counter_.load(); }
 #endif
 
     //-------------------------------------------------------------------------------

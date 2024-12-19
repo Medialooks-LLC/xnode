@@ -10,90 +10,92 @@ namespace xsdk {
 
 struct XNodeJsonHandler: public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, XNodeJsonHandler> {
 
-    XValue root;
+    XValue root_;
 
 private:
-    XKey                     key;
-    std::vector<INode::SPtr> nodes;
+    XKey                     key_;
+    std::vector<INode::SPtr> nodes_;
 
-    uint64_t         root_uid;
-    std::string_view root_name;
+    const uint64_t         root_uid_;
+    const std::string_view root_name_;
 
 public:
-    XNodeJsonHandler(uint64_t _uid = 0, std::string_view _name = {}) : root_uid(_uid), root_name(_name) {}
+    XNodeJsonHandler(const uint64_t _uid, const std::string_view _name) : root_uid_(_uid), root_name_(_name) {}
 
-    bool Null() { return _put_value(XValue(nullptr)); }
-    bool Bool(bool b) { return _put_value(XValue(b)); }
-    bool Int(int i) { return _put_value(XValue(i)); }
-    bool Uint(unsigned u) { return _put_value(XValue(u)); }
-    bool Int64(int64_t i) { return _put_value(XValue(i)); }
-    bool Uint64(uint64_t u) { return _put_value(XValue(u)); }
-    bool Double(double d) { return _put_value(XValue(d)); }
-    bool String(const char* str, rapidjson::SizeType length, bool copy)
+    bool Null() { return PutValue_(XValue(nullptr)); }
+    bool Bool(bool _val) { return PutValue_(XValue(_val)); }
+    bool Int(int _val) { return PutValue_(XValue(_val)); }
+    bool Uint(unsigned _val) { return PutValue_(XValue(_val)); }
+    bool Int64(int64_t _val) { return PutValue_(XValue(_val)); }
+    bool Uint64(uint64_t _val) { return PutValue_(XValue(_val)); }
+    bool Double(double _val) { return PutValue_(XValue(_val)); }
+    bool String(const char* _str, rapidjson::SizeType _length, bool _copy)
     {
-        return _put_value(std::string_view(str, length));
+        return PutValue_(std::string_view(_str, _length));
     }
-    bool Key(const char* str, rapidjson::SizeType length, bool copy)
+    bool Key(const char* _str, rapidjson::SizeType _length, bool _copy)
     {
-        key = std::string(str, length);
+        key_ = std::string(_str, _length);
         return true;
     }
 
-    bool StartObject() { return _put_node(INode::NodeType::Map); }
+    bool StartObject() { return PutNode_(INode::NodeType::Map); }
 
-    bool EndObject(rapidjson::SizeType memberCount)
+    bool EndObject(rapidjson::SizeType _member_count)
     {
-        assert(!nodes.empty() && nodes.back() && nodes.back()->Size() == memberCount &&
-               nodes.back()->Type() == INode::NodeType::Map);
+        assert(!nodes_.empty() && nodes_.back() && nodes_.back()->Size() == _member_count &&
+               nodes_.back()->Type() == INode::NodeType::Map);
 
-        return _end_node();
+        return EndNode_();
     }
 
-    bool StartArray() { return _put_node(INode::NodeType::Array); }
+    bool StartArray() { return PutNode_(INode::NodeType::Array); }
 
-    bool EndArray(rapidjson::SizeType elementCount)
+    bool EndArray(rapidjson::SizeType _element_count)
     {
-        assert(!nodes.empty() && nodes.back() && nodes.back()->Size() == elementCount &&
-               nodes.back()->Type() == INode::NodeType::Array);
+        assert(!nodes_.empty() && nodes_.back() && nodes_.back()->Size() == _element_count &&
+               nodes_.back()->Type() == INode::NodeType::Array);
 
-        return _end_node();
+        return EndNode_();
     }
 
 private:
-    bool _put_value(XValue&& _val)
+    bool PutValue_(XValue&& _val)
     {
-        if (nodes.empty()) {
-            assert(!key && !root);
-            root = std::move(_val);
+        if (nodes_.empty()) {
+            assert(!key_ && !root_);
+            root_ = std::move(_val);
             return true;
         }
 
-        auto [success, insert_at, prev] = nodes.back()->Insert(std::exchange(key, kIdxEnd), std::move(_val));
+        auto [success, insert_at, prev] = nodes_.back()->Insert(std::exchange(key_, kIdxEnd), std::move(_val));
         assert(success);
         return success;
     }
 
-    bool _put_node(INode::NodeType _node_type)
+    bool PutNode_(const INode::NodeType _node_type)
     {
         auto node_p = XNodeFactoryGet()->NodeCreate(_node_type,
-                                                    nodes.empty() ? root_name : std::string_view(),
-                                                    nodes.empty() ? root_uid : 0);
-        _put_value(node_p);
-        nodes.push_back(node_p);
+                                                    nodes_.empty() ? root_name_ : std::string_view(),
+                                                    nodes_.empty() ? root_uid_ : 0);
+        PutValue_(node_p);
+        nodes_.push_back(node_p);
         return true;
     }
 
-    bool _end_node()
+    bool EndNode_()
     {
-        if (nodes.empty())
+        if (nodes_.empty())
             return false;
 
-        nodes.pop_back();
+        nodes_.pop_back();
         return true;
     }
 };
 
-std::pair<INode::SPtr, size_t> xnode::FromJson(std::string_view _json, uint64_t _uid, std::string_view _name)
+std::pair<INode::SPtr, size_t> xnode::FromJson(const std::string_view _json,
+                                               const std::string_view _name,
+                                               const uint64_t         _uid)
 {
     if (_json.empty())
         return {nullptr, -1};
@@ -107,72 +109,73 @@ std::pair<INode::SPtr, size_t> xnode::FromJson(std::string_view _json, uint64_t 
     if (res.IsError())
         error_pos = res.Offset() != 0 ? res.Offset() : -1;
 
-    return {handler.root.QueryPtr<INode>(), error_pos};
+    return {handler.root_.QueryPtr<INode>(), error_pos};
 }
 
 // Serialization to json
 template <class TWriter>
-void WriteXValue(TWriter&& writer, const XValueRT& ValueAt_, xnode::JsonFormat _json_format)
+void WriteXValue(TWriter&& _writer, const XValueRT& _value_at, const xnode::JsonFormat _json_format)
 {
-    switch (ValueAt_.Type()) {
+    switch (_value_at.Type()) {
         case XValue::kEmpty: // 2Think !!!
         case XValue::kNull:
-            writer.Null();
+            _writer.Null();
             break;
         case XValue::kBool:
-            writer.Bool(ValueAt_.Bool());
+            _writer.Bool(_value_at.Bool());
             break;
         case XValue::kInt64:
-            writer.Int64(ValueAt_.Int64());
+            _writer.Int64(_value_at.Int64());
             break;
         case XValue::kUint64:
-            writer.Int64(ValueAt_.Uint64());
+            _writer.Int64(_value_at.Uint64());
             break;
         case XValue::kDouble:
-            writer.Double(ValueAt_.Double());
+            _writer.Double(_value_at.Double());
             break;
         case XValue::kString:
-            writer.String(ValueAt_.StringView().data(), static_cast<rapidjson::SizeType>(ValueAt_.StringView().size()));
+            _writer.String(_value_at.StringView().data(),
+                           static_cast<rapidjson::SizeType>(_value_at.StringView().size()));
             break;
         case XValue::kObject:
         case XValue::kConstObject:
-            WriteXNode(ValueAt_.QueryPtrC<INode>(), writer, _json_format);
+            WriteXNode(_value_at.QueryPtrC<INode>(), _writer, _json_format);
             break;
 
         default:
-            assert(!"write_xvalue - unknown type");
+            assert(!"WriteXValue - unknown type");
             break;
     }
 }
 
 template <class TWriter>
-void WriteXNode(const INode::SPtrC& _node_sp, TWriter&& writer, xnode::JsonFormat _json_format)
+void WriteXNode(const INode::SPtrC& _node_sp, TWriter&& _writer, const xnode::JsonFormat _json_format)
 {
     if (_node_sp->Type() == INode::NodeType::Map) {
-        writer.StartObject();
+        _writer.StartObject();
         auto test_vec = _node_sp->BulkGetAll();
         for (const auto& [key, xval] : _node_sp->BulkGetAll()) {
             assert(!key.StringGet().value_or("").empty());
-            writer.Key(key.StringGet().value().data(),
-                       static_cast<rapidjson::SizeType>(key.StringGet().value().size()));
-            WriteXValue(writer, xval, _json_format);
+            auto key_str = key.StringGet();
+            _writer.Key(key_str->data(), static_cast<rapidjson::SizeType>(key_str->size()));
+            WriteXValue(_writer, xval, _json_format);
         }
-        writer.EndObject();
+        _writer.EndObject();
     }
     else {
         assert(_node_sp->Type() == INode::NodeType::Array);
-        writer.StartArray();
+        _writer.StartArray();
         for (const auto& [key_idx, xval] : _node_sp->BulkGetAll())
-            WriteXValue(writer, xval, _json_format);
-        writer.EndArray();
+            WriteXValue(_writer, xval, _json_format);
+        _writer.EndArray();
     }
 }
 
-std::string xnode::ToJson(const INode::SPtrC& _node_this,
-                          xnode::OnCopyPF&    _pf_on_item,
-                          xnode::JsonFormat   _json_format,
-                          size_t              _indent_char_count,
-                          char                _indent_char)
+std::string xnode::ToJson(const INode::SPtrC&     _node_this,
+                          const xnode::OnCopyPF&  _pf_on_item,
+                          const xnode::JsonFormat _json_format,
+                          const size_t            _indent_char_count,
+                          const char              _indent_char)
 {
     if (!_node_this)
         return {};

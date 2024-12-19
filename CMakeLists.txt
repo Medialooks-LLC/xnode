@@ -8,6 +8,7 @@ cmake_policy(SET CMP0148 NEW)
 option(WITH_STATIC_ANALYSIS "Perform static analysis via clang-tidy" OFF)
 option(WITH_ADDRESS_SANITIZER "Add additional memory checks" OFF)
 option(WITH_TESTS "Build test projects" ON)
+option(WITH_CODE_COVERAGE "Set ON when do linux build on CI" OFF)
 
 set(ENV{WITH_PYTHON_BINDINGS} ${WITH_PYTHON_BINDINGS})
 
@@ -97,6 +98,11 @@ endif()
 if(WITH_ADDRESS_SANITIZER AND NOT WIN32)
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address)
+endif()
+
+if(WITH_CODE_COVERAGE AND NOT WIN32)
+    add_compile_options(-fprofile-arcs -ftest-coverage -fprofile-update=atomic)
+    add_link_options(-lgcov --coverage)
 endif()
 
 add_subdirectory(src)

@@ -55,7 +55,8 @@ using OnCopyPF = const std::function<OnCopyRes(const INode::SPtrC&, const XKey&,
  * @param _xml_format The format of the output XML. Can be `kOneLine` or `kPretty`. @ref XmlFormat
  * @param _attribute_prefix The prefix which will define XML attributes.
  * @param _value_name The name of INode element which will be used as XML value (inner text).
- * @param _indent_char_count The number of indentation characters to be used. <STRONG>(Currently not imlemented)</STRONG>
+ * @param _indent_char_count The number of indentation characters to be used. <STRONG>(Currently not
+ * imlemented)</STRONG>
  * @param _indent_char The character to be used for indentation.<STRONG>(Currently not imlemented)</STRONG>
  * @return The resulting XML string.
  * @note If used without a previous call of @ref XmlPlatformInit, lazy initialization will be used.

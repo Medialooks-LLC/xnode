@@ -20,10 +20,10 @@ public:
     size_t   OnChangeReset();
 
     bool DoCallbacks(const INode::SPtrC& _node,
-                      const XKey&         _key,
-                      const XValueRT&    _from,
-                      const XValueRT&    _to,
-                      bool                _no_discard);
+                     const XKey&         _key,
+                     const XValueRT&     _from,
+                     const XValueRT&     _to,
+                     bool                _no_discard);
 };
 
 } // namespace xsdk::impl

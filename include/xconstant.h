@@ -24,7 +24,7 @@ enum class OnCopyRes {
     Stop
 };
 /**
- * @brief @brief Enum class representing the possible results of an OnChangePF callback.
+ * @brief Enum class representing the possible results of an OnChangePF callback.
  */
 enum class OnEachRes {
     /// The callback moves on to the next element.
@@ -37,31 +37,42 @@ enum class OnEachRes {
     Stop
 };
 
-// Special values for map/arrays
+///@name Special values for map/arrays
+///@{
 static constexpr size_t kIdxBegin = 0;  ///< The index of the first element in the map/array.
-static constexpr size_t kIdxEnd   = -1; ///< The index of the last element in the map/array.
-static constexpr size_t kIdxLast  = -2; ///< The index of the one before the last element in the map/array.
+static constexpr size_t kIdxEnd   = -1; ///< The index of the one before the last element in the map/array.
+static constexpr size_t kIdxLast  = -2; ///< The index of the last element in the map/array.
+///@}
 
-// Key speration values for allow string representation of XPath
-// e.g. "node::array_subnode[12]::value"
-static constexpr std::string_view kKeyDelimiter  = "::"; // Could be switched to "." for have js like style
-static constexpr std::string_view kKeyBraceOpen  = "[";
+///@name Key speration values for allow string representation of XPath
+///@{
+///@brief Keys delimiter for allow string representation of XPath e.g. "node::inner_node::value"
+static constexpr std::string_view kKeyDelimiter = "::"; // Could be switched to "." for have js like style
+///@brief Keys speration values for allow string representation of XPath e.g. "node::array_subnode[12]"
+static constexpr std::string_view kKeyBraceOpen = "[";
+///@brief Keys speration values for allow string representation of XPath e.g. "node::array_subnode[12]"
 static constexpr std::string_view kKeyBraceClose = "]";
+/**
+ * @brief For allow node[subnode]::value access and key names with delimiters
+ * @details e.g. node[subnode_name::with_delimiters] -> 'subnode_name::with_delimiters' would be string key
+ * @note All between braces [...] if not numbers, assumed as string,
+ * including other opening braces, braces NOT COUNTING (could be changed later)
+ * e.g. node[subnode_name[with_braces]rest_chars_and_non_counted_brace] ->
+ *      "node", "subnode_name[with_braces", "rest_chars_and_non_counted_brace]"
+ */
+static constexpr bool kStringKeyInBraces = true;
+///@}
 
-// For allow node[subnode]::value access and key names with delimiters
-// e.g. node[subnode_name::with_delimiters] -> 'subnode_name::with_delimiters' would be string key
-// Note: All between braces [...] if not numbers, assumed as string,
-// including other opening braces, braces NOT COUNTING (could be changed later)
-// e.g. node[subnode_name[with_braces]rest_chars_and_non_counted_brace] ->
-//      "node", "subnode_name[with_braces", "rest_chars_and_non_counted_brace]"
-static constexpr bool kStringKayInBraces = true;
+///@name Special values for XML import/export
+///@{
+static constexpr std::string_view kXMLAttributePrefix = "-";     ///< Default prefix for XML attributes.
+static constexpr std::string_view kXMLValueName       = "#text"; ///< Default name for the XML value element.
+///@}
 
-// Special values for XML import/export
-static constexpr std::string_view kXMLAttributePrefix = "-"; ///< Prefix for XML attributes.
-static constexpr std::string_view kXMLValueName = "#text";   ///< Name for the XML value element.
-
-// Special values for JSON/XML export
-static constexpr size_t kExportIndentCount = 4;   ///< Number of spaces for indentation when exporting data.
-static constexpr char   kExportIndentChar  = ' '; ///< Character used for indentation when exporting data.
+///@name Special values for JSON export
+///@{
+static constexpr size_t kExportIndentCount = 4;   ///< Default number of spaces for indentation when exporting data.
+static constexpr char   kExportIndentChar  = ' '; ///< Default character used for indentation when exporting data.
+///@}
 
 } // namespace xsdk

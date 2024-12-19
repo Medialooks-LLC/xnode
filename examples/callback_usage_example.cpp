@@ -8,8 +8,7 @@ INode::OnChangePF printer = [](INode::CallbackReason _cbr,
                                const XValueRT&       _from,
                                const XValueRT&       _to) {
     std::string reason = "unknown";
-    switch (_cbr)
-    {
+    switch (_cbr) {
         case INode::CallbackReason::Changes:
             reason = "Changes";
             break;
@@ -31,10 +30,10 @@ INode::OnChangePF printer = [](INode::CallbackReason _cbr,
 };
 // Function that checks that the number of clients should not be greater than 10
 INode::OnChangePF limit_num_clients = [](INode::CallbackReason _cbr,
-                          const INode::SPtrC&   _node,
-                          const XKey&           _key,
-                          const XValueRT&       _from,
-                          const XValueRT&       _to) {
+                                         const INode::SPtrC&   _node,
+                                         const XKey&           _key,
+                                         const XValueRT&       _from,
+                                         const XValueRT&       _to) {
     if (_key.StringGet() == "num_clients") {
         if (_to.Int64() > 10) {
             std::cout << "Reached the maximum number of clients" << std::endl;

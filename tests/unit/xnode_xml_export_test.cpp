@@ -284,7 +284,7 @@ TEST(xnode_xml_export_unit_tests, check_double_conversion2)
 
 TEST(xnode_xml_export_unit_tests, check_double_conversion3)
 {
-    auto str = R"(<root a="b"><inn>abc<c d="e"/>def</inn></root>)"; //problem with inn has or not has attrs
+    auto str = R"(<root a="b"><inn>abc<c d="e"/>def</inn></root>)"; // problem with inn has or not has attrs
     // { "-a": "b", "inn": [ "abc", {"-d" : "e"}, "def" ] }
     auto [node, e_pos] = xnode::FromXml(str);
     EXPECT_TRUE(node != nullptr);
@@ -294,7 +294,8 @@ TEST(xnode_xml_export_unit_tests, check_double_conversion3)
 #endif
     auto res = xnode::ToXml(node);
 
-    auto ref = R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><root a="b"><inn>abc<c d="e"/>def</inn></root>)";
+    auto ref =
+        R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><root a="b"><inn>abc<c d="e"/>def</inn></root>)";
 
     EXPECT_EQ(ref, res);
 }
@@ -357,7 +358,8 @@ TEST(xnode_xml_export_unit_tests, check_double_conversion6)
 #endif
     auto res = xnode::ToXml(node);
 
-    auto ref = R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><alice>bob<charlie>david</charlie>edgar</alice>)";
+    auto ref =
+        R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><alice>bob<charlie>david</charlie>edgar</alice>)";
 
     EXPECT_EQ(ref, res);
 }
@@ -375,7 +377,8 @@ TEST(xnode_xml_export_unit_tests, check_double_conversion_with_unicode)
 #endif
     auto res = xnode::ToXml(node);
 
-    auto ref = R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><root attr="alphabet алфавит 字母 ← ⇐">alphabet алфавит 字母 ← ⇐🙂</root>)";
+    auto ref =
+        R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?><root attr="alphabet алфавит 字母 ← ⇐">alphabet алфавит 字母 ← ⇐🙂</root>)";
 
     EXPECT_EQ(ref, res);
 }

@@ -2,9 +2,9 @@
 
 #include "xnode_factory.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
-#include <cassert>
 
 namespace xsdk::impl {
 
@@ -13,7 +13,7 @@ class XNodeFactory final: public INodeFactory, public std::enable_shared_from_th
     XNodeFactory() = default;
 
 public:
-    static std::shared_ptr<INodeFactory> create();
+    static std::shared_ptr<INodeFactory> Create();
 
 public:
     virtual INode::SPtr NodeCreate(INode::NodeType _type, std::string_view _name, uint64_t _uid) override;

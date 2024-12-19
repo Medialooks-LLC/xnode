@@ -9,9 +9,7 @@ INode::SPtr xnode::Create(INode::NodeType _type, std::string_view _name /*= {}*/
     return XNodeFactoryGet()->NodeCreate(_type, _name, _uid);
 }
 
-INode::SPtr xnode::CreateArray(std::vector<XValue>&& _values,
-                                   std::string_view      _name /*= {}*/,
-                                   uint64_t              _uid /*= 0*/)
+INode::SPtr xnode::CreateArray(std::vector<XValue>&& _values, std::string_view _name /*= {}*/, uint64_t _uid /*= 0*/)
 {
     auto node_p = xnode::Create(INode::NodeType::Array, _name, _uid);
     if (node_p)
@@ -21,8 +19,8 @@ INode::SPtr xnode::CreateArray(std::vector<XValue>&& _values,
 }
 
 INode::SPtr xnode::CreateMap(std::vector<std::pair<XKey, XValue>>&& _values,
-                                 std::string_view                       _name /*= {}*/,
-                                 uint64_t                               _uid /*= 0*/)
+                             std::string_view                       _name /*= {}*/,
+                             uint64_t                               _uid /*= 0*/)
 {
     auto node_p = xnode::Create(INode::NodeType::Map, _name, _uid);
     if (node_p)
@@ -32,8 +30,8 @@ INode::SPtr xnode::CreateMap(std::vector<std::pair<XKey, XValue>>&& _values,
 }
 
 INode::SPtr xnode::CreateComplex(std::vector<std::pair<XPath, XValue>>&& _values,
-                                     std::string_view                        _name /*= {}*/,
-                                     uint64_t                                _uid /*= 0*/)
+                                 std::string_view                        _name /*= {}*/,
+                                 uint64_t                                _uid /*= 0*/)
 {
     std::optional<INode::NodeType> type;
     if (!_values.empty())
@@ -43,6 +41,20 @@ INode::SPtr xnode::CreateComplex(std::vector<std::pair<XPath, XValue>>&& _values
 
     for (auto&& [key, value] : _values)
         xnode::Set(node_p, std::move(key), std::move(value));
+
+    return node_p;
+}
+
+INode::SPtr xnode::NodeCombine(const INode::SPtrC&                    _node_base,
+                               std::vector<std::pair<XKey, XValue>>&& _values,
+                               bool                                   _overwrite)
+{
+    auto node_p = (_node_base && _node_base->Type() == INode::NodeType::Map) ? xnode::Clone(_node_base, true) :
+                                                                               xnode::Create(INode::NodeType::Map);
+    if (_overwrite && node_p)
+        node_p->BulkSet(std::move(_values));
+    else if (node_p)
+        node_p->BulkInsert(std::move(_values));
 
     return node_p;
 }

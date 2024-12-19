@@ -18,25 +18,25 @@ IContainerFactory* XContainerFactoryGet()
 
 namespace impl {
 
-std::shared_ptr<IContainerFactory> XContainerFactory::create()
-{
-    return std::shared_ptr<IContainerFactory> {new XContainerFactory()};
-}
-
-/*virtual*/ std::unique_ptr<IContainer> XContainerFactory::ContainerCreate(IContainer::ContainerType _type,
-                                                                           bool                      _erase_detection)
-{
-    if (_type == IContainer::ContainerType::Array) {
-        assert(!_erase_detection);
-        return std::make_unique<XContainerArray>();
+    std::shared_ptr<IContainerFactory> XContainerFactory::create()
+    {
+        return std::shared_ptr<IContainerFactory> {new XContainerFactory()};
     }
 
-    assert(_type == IContainer::ContainerType::Map);
-    if (_erase_detection)
-        return std::make_unique<XContainerMapWithErase>();
+    /*virtual*/ std::unique_ptr<IContainer> XContainerFactory::ContainerCreate(IContainer::ContainerType _type,
+                                                                               bool _erase_detection)
+    {
+        if (_type == IContainer::ContainerType::Array) {
+            assert(!_erase_detection);
+            return std::make_unique<XContainerArray>();
+        }
 
-    return std::make_unique<XContainerMap>();
-}
+        assert(_type == IContainer::ContainerType::Map);
+        if (_erase_detection)
+            return std::make_unique<XContainerMapWithErase>();
+
+        return std::make_unique<XContainerMap>();
+    }
 
 } // namespace impl
 

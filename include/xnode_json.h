@@ -15,28 +15,30 @@ namespace xsdk::xnode {
  * @brief Parses the given JSON string and returns an INode pointer and the error position if any.
  *
  * @param _json The JSON string to be parsed.
- * @param _uid  The unique identifier for the resulting node.
  * @param _name The name to be given to the resulting node.
+ * @param _uid  The unique identifier for the resulting node.
  *
  * @return A std::pair consisting of an INode pointer and the error position if any.
  *
  * @note A zero error position means that the import from JSON was successful.
  */
-std::pair<INode::SPtr, size_t> FromJson(std::string_view _json, uint64_t _uid = 0, std::string_view _name = {});
+std::pair<INode::SPtr, size_t> FromJson(const std::string_view _json,
+                                        const std::string_view _name               = {},
+                                        const uint64_t         _uid                = 0);
 
 /**
  * @brief Enum class representing different JSON format options.
  * @details This enum class defines three different JSON format options: kOneLine, kOneLineArrays and kPretty.
  */
 enum class JsonFormat {
+    /// Pretty JSON format with indentation for readability (default)
+    kPretty  = 0, 
+    
     /// One-line JSON format.
-    kOneLine,
+    kOneLine = 1,
 
     /// Pretty JSON format with arrays represented by a single line.
-    kOneLineArrays,
-
-    /// Pretty JSON format with indentation for readability.
-    kPretty
+    kOneLineArrays = 2
 };
 
 /**
@@ -59,10 +61,10 @@ using OnCopyPF = const std::function<OnCopyRes(const INode::SPtrC&, const XKey&,
  * @return Returns a std::string containing the json format representation of the INode object.
  */
 std::string ToJson(const INode::SPtrC& _node_this,
-                   OnCopyPF&           _pf_on_item        = nullptr,
-                   JsonFormat          _json_format       = JsonFormat::kOneLineArrays,
-                   size_t              _indent_char_count = kExportIndentCount,
-                   char                _indent_char       = kExportIndentChar);
+                   const OnCopyPF&     _pf_on_item        = {},
+                   const JsonFormat    _json_format       = JsonFormat::kOneLineArrays,
+                   const size_t        _indent_char_count = kExportIndentCount,
+                   const char          _indent_char       = kExportIndentChar);
 
 ///@}
 

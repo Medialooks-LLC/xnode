@@ -39,7 +39,7 @@ public:
     /**
      * @brief Default constructor.
      */
-    XKey()                = default;
+    XKey() = default;
     /**
      * @brief Move constructor.
      * @param _other The other XKey to move from.
@@ -103,7 +103,7 @@ public:
      */
     XKey(std::string&& _str)
     {
-        str_hold_p_           = std::make_shared<const std::string>(std::move(_str));
+        str_hold_p_          = std::make_shared<const std::string>(std::move(_str));
         (XKeyVariant&)* this = *str_hold_p_;
     }
     /**
@@ -140,7 +140,9 @@ public:
      * @param _str_hold_p The @c xbase::String::SPtrC to store the XKey string with.
      * @param _str The @c std::string_view to initialize the XKey with.
      */
-    XKey(const xnode::String::SPtrC& _str_hold_p, std::string_view _str) : XKeyVariant(_str), str_hold_p_(_str_hold_p) {}
+    XKey(const xnode::String::SPtrC& _str_hold_p, std::string_view _str) : XKeyVariant(_str), str_hold_p_(_str_hold_p)
+    {
+    }
     ///@}
 
     XKey& operator=(XKey&&)      = default;
@@ -153,13 +155,13 @@ public:
      * @brief Check if the XKey is empty.
      * @return Returns true if the XKey is empty, otherwise false.
      */
-    bool     IsEmpty() const;
+    bool IsEmpty() const;
 
     /**
      * @brief The type of the XKey.
      * @return The KeyType enumeration value representing the type of the XKey.
      */
-    enum class KeyType { 
+    enum class KeyType {
         /// @brief Represents an empty key.
         Empty,
 
@@ -167,25 +169,32 @@ public:
         Index,
 
         /// @brief Represents a key that holds a string value.
-        String };
+        String
+    };
     /**
      * @brief Getter method for retrieving the type of the XKey.
      *
      * @return The KeyType of the XKey.
      */
-    KeyType                         Type() const;
+    KeyType Type() const;
 
     /**
      * @brief Get the index of the XKey if it is an index type.
      * @return std::optional<size_t> containing the index value or std::nullopt if the XKey is not an index type.
      */
-    std::optional<size_t>           IndexGet() const;
+    std::optional<size_t> IndexGet() const;
     /**
      * @brief Get the @c std::string_view of the XKey if it is a string type.
      * @return std::optional<std::string_view> containing the string view value or std::nullopt if the XKey is
      * not a string type.
      */
     std::optional<std::string_view> StringGet() const;
+
+    /**
+     * @brief Get the @c std::string_view of the XKey if it is a string type and compare with specified string
+     * @return true if same string, false is differemt string
+     */
+    bool IsEqual(const std::string_view _compare_with) const;
 
 private:
     void InitHolder_();

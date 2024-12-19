@@ -2,9 +2,9 @@
 
 #include "xbase/xobject.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
-#include <cassert>
 
 namespace xsdk::impl {
 
@@ -19,6 +19,5 @@ public:
     virtual std::any QueryPtr(xbase::Uid _type_query) override;
     virtual std::any QueryPtrC(xbase::Uid _type_query) const override;
 };
-
 
 } // namespace xsdk::impl

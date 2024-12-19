@@ -29,7 +29,6 @@ private:
 
     std::map<INode::SPtr, std::vector<std::string>> nodes_order_;
     std::unique_ptr<xsdk::impl::Transcoder>         coder_;
-    const size_t                                    max_utf8_symbol_size_ = 4;
 
 public:
     XNodeSaxHandler(uint64_t         _uid              = 0,

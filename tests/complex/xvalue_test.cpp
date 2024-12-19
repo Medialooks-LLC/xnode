@@ -33,6 +33,91 @@ TEST(xobjects_tests, uids)
     EXPECT_NE(res1, res2);
 }
 
+TEST(xvalue_tests, numbers_clamp)
+{
+
+    XValue xUMax(std::numeric_limits<uint64_t>::max());
+    XValue xMax(std::numeric_limits<int64_t>::max());
+    XValue xMin(std::numeric_limits<int64_t>::min());
+    XValue xDMax((double)std::numeric_limits<uint32_t>::max());
+    XValue xDMin((double)std::numeric_limits<int32_t>::min());
+
+    EXPECT_EQ(xUMax.Uint64(), std::numeric_limits<uint64_t>::max());
+    EXPECT_EQ(xUMax.Int64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xUMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xUMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xMax.Uint64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xMax.Int64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xMin.Uint64(), std::numeric_limits<uint64_t>::min());
+    EXPECT_EQ(xMin.Int64(), std::numeric_limits<int64_t>::min());
+    EXPECT_EQ(xMin.Uint32(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xMin.Int32(), std::numeric_limits<int32_t>::min());
+
+    EXPECT_EQ(xMin.Uint64(0, 123), 123);
+    EXPECT_EQ(xMin.Uint32(0, 567), 567);
+
+    EXPECT_EQ(xDMax.Double(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Uint64(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Int64(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xDMin.Double(), std::numeric_limits<int32_t>::min());
+    EXPECT_EQ(xDMin.Uint64(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xDMin.Int64(), std::numeric_limits<int32_t>::min());
+    EXPECT_EQ(xDMin.Uint32(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xDMin.Int32(), std::numeric_limits<int32_t>::min());
+
+    EXPECT_EQ(xDMin.Uint64(0, 123), 123);
+    EXPECT_EQ(xDMin.Uint32(0, 567), 567);
+}
+
+TEST(xvalue_tests, numbers_from_str_clamp)
+{
+    XValue xUMax(std::to_string(std::numeric_limits<uint64_t>::max()));
+    XValue xMax(std::to_string(std::numeric_limits<int64_t>::max()));
+    XValue xMin(std::to_string(std::numeric_limits<int64_t>::min()));
+    XValue xDMax(std::to_string((double)std::numeric_limits<uint32_t>::max()));
+    XValue xDMin(std::to_string((double)std::numeric_limits<int32_t>::min()));
+
+    EXPECT_EQ(xUMax.Uint64(), std::numeric_limits<uint64_t>::max());
+    EXPECT_EQ(xUMax.Int64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xUMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xUMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xMax.Uint64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xMax.Int64(), std::numeric_limits<int64_t>::max());
+    EXPECT_EQ(xMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xMin.Uint64(), std::numeric_limits<uint64_t>::min());
+    EXPECT_EQ(xMin.Int64(), std::numeric_limits<int64_t>::min());
+    EXPECT_EQ(xMin.Uint32(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xMin.Int32(), std::numeric_limits<int32_t>::min());
+
+    EXPECT_EQ(xMin.Uint64(0, 123), 123);
+    EXPECT_EQ(xMin.Uint32(0, 567), 567);
+
+    EXPECT_EQ(xDMax.Double(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Uint64(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Int64(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Uint32(), std::numeric_limits<uint32_t>::max());
+    EXPECT_EQ(xDMax.Int32(), std::numeric_limits<int32_t>::max());
+
+    EXPECT_EQ(xDMin.Double(), std::numeric_limits<int32_t>::min());
+    EXPECT_EQ(xDMin.Uint64(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xDMin.Int64(), std::numeric_limits<int32_t>::min());
+    EXPECT_EQ(xDMin.Uint32(), std::numeric_limits<uint32_t>::min());
+    EXPECT_EQ(xDMin.Int32(), std::numeric_limits<int32_t>::min());
+
+    EXPECT_EQ(xDMin.Uint64(0, 123), 123);
+    EXPECT_EQ(xDMin.Uint32(0, 567), 567);
+}
+
 TEST(xvalue_tests, construct)
 {
     {
@@ -93,6 +178,154 @@ TEST(xvalue_tests, construct)
         EXPECT_EQ(xTest.Double(-1), 999.0);
         EXPECT_EQ(xTest.Int64(-1), 999);
         EXPECT_EQ(xTest.Uint64(99), 999);
+    }
+    {
+        XValue xTest((int64_t)-777);
+        EXPECT_EQ(xTest.Type(), XValue::kInt64);
+        EXPECT_EQ(xTest.Double(-1), -777.0);
+        EXPECT_EQ(xTest.Int64(-1), -777);
+        EXPECT_EQ(xTest.Uint64(99, 100), 100);
+    }
+
+    {
+        XValue xTest(-777.1);
+        EXPECT_EQ(xTest.Type(), XValue::kDouble);
+        EXPECT_EQ(xTest.Double(-1), -777.1);
+        EXPECT_EQ(xTest.Int64(-1), -777);
+        EXPECT_EQ(xTest.Uint64(99, 100), 100);
+    }
+    {
+        XValue xTest(-777.1f);
+        EXPECT_EQ(xTest.Type(), XValue::kDouble);
+        EXPECT_EQ(xTest.Double(-1), -777.1f);
+        EXPECT_EQ(xTest.Int64(-1), -777);
+        EXPECT_EQ(xTest.Uint64(99, 100), 100);
+    }
+    {
+        XValue xTest("string");
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+    }
+    {
+        XValue xTest(std::string("string"));
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+    }
+    {
+        std::string str("string");
+        XValue      xTest(str);
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+    }
+    {
+        std::string str("string");
+        XValue      xTest(str.c_str());
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+    }
+
+    {
+        std::string_view str("string");
+        XValue           xTest(str);
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+    }
+
+    {
+        XValue xTest(std::string_view("string"));
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "string");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "string");
+        EXPECT_FALSE(xTest.IsEmpty());
+    }
+
+    {
+        XValue xTest(std::string_view(""));
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "");
+        EXPECT_TRUE(xTest.IsEmpty());
+    }
+
+    {
+        const char* psz = nullptr;
+        XValue      xTest(psz);
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "");
+        EXPECT_TRUE(xTest.IsEmpty());
+    }
+
+    {
+        const auto* psz = "TEST";
+        XValue      xTest((char*)psz);
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "TEST");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "TEST");
+        EXPECT_FALSE(xTest.IsEmpty());
+    }
+
+    {
+        char szTest[16] = {};
+        strcpy(szTest, "TEST");
+        XValue xTest(szTest);
+        EXPECT_EQ(xTest.Type(), XValue::kString);
+        EXPECT_EQ(xTest.String(), "TEST");
+        EXPECT_EQ(std::string(xTest.StringView().data()), "TEST");
+        EXPECT_FALSE(xTest.IsEmpty());
+    }
+
+    XValue obj(xobject::CreateShared());
+    XValue obj_c(std::static_pointer_cast<const IObject>(xobject::CreateShared()));
+
+    IObject::SPtr spObj = xobject::CreateShared();
+}
+
+TEST(xvalue_tests, optional_get)
+{
+    {
+        XValue xTest;
+        EXPECT_EQ(xTest.Type(), XValue::kEmpty);
+        EXPECT_FALSE(xTest);
+        auto res = xTest.OptionalGet<std::string>();
+        EXPECT_FALSE(res.has_value());
+    }
+
+    {
+        XValue xTest((size_t)17);
+        EXPECT_EQ(xTest.Type(), XValue::kUint64);
+        EXPECT_EQ(xTest.Int64(-1), 17);
+        EXPECT_EQ(xTest.Uint64(99), 17);
+
+        auto int_opt = xTest.OptionalGet<int>();
+        ASSERT_TRUE(int_opt.has_value());
+        EXPECT_EQ(int_opt.value(), 17);
+
+        auto res = xTest.OptionalGet<std::string>();
+        EXPECT_FALSE(res.has_value());
+    }
+    {
+        XValue xTest((uint32_t)999);
+        EXPECT_EQ(xTest.Type(), XValue::kUint64);
+        EXPECT_EQ(xTest.Double(-1), 999.0);
+        EXPECT_EQ(xTest.Int64(-1), 999);
+        EXPECT_EQ(xTest.Uint64(99), 999);
+
+        auto int_opt = xTest.OptionalGet<int>();
+        ASSERT_TRUE(int_opt.has_value());
+        EXPECT_EQ(int_opt.value(), 999);
+
+        auto uint_opt = xTest.OptionalGet<uint64_t>();
+        ASSERT_TRUE(int_opt.has_value());
+        EXPECT_EQ(int_opt.value(), 999);
+
+        auto res = xTest.OptionalGet<std::string>();
+        EXPECT_FALSE(res.has_value());
     }
     {
         XValue xTest((int64_t)-777);

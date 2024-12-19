@@ -152,7 +152,8 @@ std::optional<IContainer::MappedType> XContainerArray::Erase(const KeyType& _key
 
 void XContainerArray::Clear() { values_deq_.clear(); }
 
-inline const IContainer::MappedType& XContainerArray::ValueAt_(const typename std::deque<MappedType>::const_iterator& _it)
+inline const IContainer::MappedType& XContainerArray::ValueAt_(
+    const typename std::deque<MappedType>::const_iterator& _it)
 {
     static const MappedType empty;
     return _it != values_deq_.end() ? *_it : empty;

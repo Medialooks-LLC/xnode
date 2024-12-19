@@ -41,7 +41,7 @@ public:
 
     // Return 'false' if empty or key not found
     virtual bool ForEach(std::function<bool(const KeyType&, const MappedType&)>&& _pf_on_item,
-                          const std::optional<KeyType>& _from_key = std::nullopt) const override;
+                         const std::optional<KeyType>& _from_key = std::nullopt) const override;
 
     // Return 'false' if empty or key not found
     virtual bool ForEach( // NOLINT(readability-function-cognitive-complexity)

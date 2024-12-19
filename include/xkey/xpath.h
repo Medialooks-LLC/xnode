@@ -15,17 +15,17 @@ namespace xsdk {
  */
 class XPath: public std::deque<XKey> {
 public:
-    //using deque::deque;
+    // using deque::deque;
     ///@name Base constructors
     ///@{
     /// @brief Default constructor.
-    XPath()                 = default;
+    XPath() = default;
     /// @brief Move constructor.
     /// @param _other The other XPath to move from.
     XPath(XPath&& _other) noexcept = default;
     /// @brief Copy constructor.
     /// @param _other The other XPath to copy from.
-    XPath(const XPath& _other)     = default;
+    XPath(const XPath& _other) = default;
     ///@}
 
     ///@name XKey constructors
@@ -50,7 +50,7 @@ public:
      * @note The "::" is used as keys delimeter in string
      */
     XPath(const char* _str) { _add_keys(_str); }
-    //XPath(char* _str) { _add_keys(_str); }
+    // XPath(char* _str) { _add_keys(_str); }
     /**
      * @brief Constructor taking a std::string object and creating XPath keys from it
      * @param _str The std::string object to create keys from
@@ -102,10 +102,11 @@ public:
      * @brief Returns a reference to the first XKey in the XPath container.
      * @return Reference to the first XKey in the container if it is not empty, otherwise the empty_key.
      */
-    XKey&       front() { return empty() ? empty_key : std::deque<XKey>::front(); }
+    XKey& front() { return empty() ? empty_key : std::deque<XKey>::front(); }
     /**
      * @brief Returns a const reference to the first XKey in the XPath container.
-     * @return Const reference to the first XKey in the container if it is not empty, otherwise the empty_key as a const reference
+     * @return Const reference to the first XKey in the container if it is not empty, otherwise the empty_key as a const
+     * reference
      */
     const XKey& front() const { return empty() ? empty_key : std::deque<XKey>::front(); }
 
@@ -113,10 +114,11 @@ public:
      * @brief Returns a reference to the last XKey in the XPath container.
      * @return Reference to the last XKey in the container if it is not empty, otherwise the empty_key.
      */
-    XKey&       back() { return empty() ? empty_key : std::deque<XKey>::back(); }
+    XKey& back() { return empty() ? empty_key : std::deque<XKey>::back(); }
     /**
      * @brief Returns a const reference to the last XKey in the XPath container.
-     * @return Const reference to the last XKey in the container if it is not empty, otherwise the empty_key as a const reference.
+     * @return Const reference to the last XKey in the container if it is not empty, otherwise the empty_key as a const
+     * reference.
      */
     const XKey& back() const { return empty() ? empty_key : std::deque<XKey>::back(); }
 
@@ -131,7 +133,7 @@ public:
      */
     XKey pop_front();
     /**
-     * @brief For allow to have flat nodes, string access to node 
+     * @brief For allow to have flat nodes, string access to node
      * @return string reperesetation of path e.g. "node::array_subnode[12]::value"
      */
     std::string to_string() const;

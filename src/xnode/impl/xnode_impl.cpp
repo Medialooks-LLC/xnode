@@ -37,11 +37,11 @@ std::any XNode::QueryPtr(xbase::Uid _type_query)
 {
     if (_type_query == xbase::TypeUid<INodePrivate>())
         return std::static_pointer_cast<INodePrivate>(shared_from_this());
-    
+
     if (_type_query == xbase::TypeUid<INode>())
         return std::static_pointer_cast<INode>(shared_from_this());
 
-     if (_type_query == xbase::TypeUid<IObject>())
+    if (_type_query == xbase::TypeUid<IObject>())
         return std::static_pointer_cast<IObject>(shared_from_this());
 
     return {};
@@ -51,7 +51,7 @@ std::any XNode::QueryPtrC(xbase::Uid _type_query) const
 {
     if (_type_query == xbase::TypeUid<const INodePrivate>())
         return std::static_pointer_cast<const INodePrivate>(shared_from_this());
-   
+
     if (_type_query == xbase::TypeUid<const INode>())
         return std::static_pointer_cast<const INode>(shared_from_this());
 
@@ -234,10 +234,7 @@ void XNode::Clear()
 
 size_t   XNode::Size() const { return ContainerGet_()->Size(); }
 bool     XNode::Empty() const { return ContainerGet_()->Empty(); }
-XValueRT XNode::At(const XKey& _key) const
-{
-    return MakeConst_(const_cast<XNode*>(this)->At(_key));
-}
+XValueRT XNode::At(const XKey& _key) const { return MakeConst_(const_cast<XNode*>(this)->At(_key)); }
 XValueRT XNode::At(const XKey& _key)
 {
     std::shared_lock lck(container_rw_);
@@ -365,8 +362,8 @@ INode::InsertRes XNode::Insert(const XKey& _key, XValue&& _val)
     }
 
     auto [success, key, existed] = ContainerGet_()->Emplace(ContainerKey_(_key, false),
-                                                           XValueRT(std::move(_val)),
-                                                           OnChangePF_());
+                                                            XValueRT(std::move(_val)),
+                                                            OnChangePF_());
     if (!success)
         return {success, NodeKey_(key), existed};
 
@@ -440,8 +437,8 @@ XValueRT XNode::Increment(const XKey& _key, const XValue& _increment_val)
     }
 
     auto [success, key_res, val] = ContainerGet_()->Emplace(ContainerKey_(_key, false),
-                                                           XValueRT(_increment_val),
-                                                           OnChangePF_());
+                                                            XValueRT(_increment_val),
+                                                            OnChangePF_());
     assert(success);
     return success ? val : XValueRT();
 }
@@ -626,8 +623,8 @@ size_t XNode::BulkInsert(std::vector<std::pair<XKey, XValue>>&& _values)
         }
 
         auto [success, key, existed] = ContainerGet_()->Emplace(ContainerKey_(it->first, false),
-                                                               std::move(it->second),
-                                                               OnChangePF_());
+                                                                std::move(it->second),
+                                                                OnChangePF_());
         if (!success) {
             it->second = existed;
             ++it;
@@ -847,15 +844,16 @@ INode::InsertRes XNode::PrivateInsert(const XKey& _key, XValue&& _val)
     }
 
     auto [success, key, existed] = ContainerGet_()->Emplace(ContainerKey_(_key, false),
-                                                           XValueRT(std::move(_val)),
-                                                           OnChangePF_());
+                                                            XValueRT(std::move(_val)),
+                                                            OnChangePF_());
     return {success, NodeKey_(key), existed};
 }
 
 //---------------------------------------------------------------------------------------------
 // Private helpers
 
-/*static*/ XValueRT XNode::MakeConst_(XValueRT&& _val) {
+/*static*/ XValueRT XNode::MakeConst_(XValueRT&& _val)
+{
     if (_val.Type() == XValue::kObject)
         return XValueRT(_val.ObjectPtrC(), _val.Timestamp());
 

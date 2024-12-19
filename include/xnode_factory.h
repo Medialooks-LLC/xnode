@@ -2,9 +2,9 @@
 
 #include "xnode_interfaces.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
-#include <cassert>
 
 namespace xsdk {
 

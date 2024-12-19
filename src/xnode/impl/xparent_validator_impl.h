@@ -31,7 +31,7 @@ public:
 
     virtual IContainer::KeyType RemoveDuplicates(IContainer*            _container_p,
                                                  IContainer::MappedType _value_remove,
-                                                 IContainer::KeyType    _key_keep) const override;
+                                                 IContainer::KeyType    _key_ignored) const override;
 };
 
 } // namespace xsdk::impl

@@ -1,12 +1,11 @@
 #include "xkey/xkey.h"
-#include "../common/variant_utils.h"
 
 namespace xsdk {
 
 template <typename TCheck, std::size_t TIndex = 0>
 constexpr std::size_t XKeyIndex()
 {
-    return xnode::impl::VariantIndex<XKeyVariant, TCheck>();
+    return xbase::VariantIndex<XKeyVariant, TCheck>();
 }
 
 bool XKey::IsEmpty() const { return Index_() == XKeyIndex<std::monostate>(); }
@@ -25,9 +24,18 @@ XKey::KeyType XKey::Type() const
     return KeyType::Empty;
 }
 
-std::optional<size_t> XKey::IndexGet() const { return xnode::impl::VariantGet<size_t>(this); }
+std::optional<size_t> XKey::IndexGet() const { return xbase::VariantGet<size_t>(this); }
 
-std::optional<std::string_view> XKey::StringGet() const { return xnode::impl::VariantGet<std::string_view>(this); }
+std::optional<std::string_view> XKey::StringGet() const { return xbase::VariantGet<std::string_view>(this); }
+
+bool XKey::IsEqual(const std::string_view _compare_with) const
+{
+    const auto* p_sv = std::get_if<std::string_view>(this);
+    if (!p_sv)
+        return false;
+
+    return *p_sv == _compare_with;
+}
 
 void XKey::InitHolder_()
 {

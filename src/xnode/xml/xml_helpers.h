@@ -11,10 +11,10 @@ namespace xsdk::impl {
 
 template <typename TXmlObject>
 struct XmlObjectDeleter {
-    void operator()(TXmlObject* p)
+    void operator()(TXmlObject* _p)
     {
-        if (p)
-            p->release();
+        if (_p)
+            _p->release();
     }
 };
 
@@ -27,8 +27,8 @@ public:
 
     bool Init();
 
-    XmlPlatformManager(const XmlPlatformManager& p_other)           = delete;
-    XmlPlatformManager operator=(const XmlPlatformManager& p_other) = delete;
+    XmlPlatformManager(const XmlPlatformManager& _p_other)           = delete;
+    XmlPlatformManager operator=(const XmlPlatformManager& _p_other) = delete;
 
 private:
     XmlPlatformManager();

@@ -4,9 +4,9 @@
 #include "transcoder.h"
 #include "xml_creator.h"
 #include "xml_helpers.h"
-#include "xnode_interfaces.h"
 #include "xnode_factory.h"
 #include "xnode_functions.h"
+#include "xnode_interfaces.h"
 
 #include <atomic>
 #include <iostream>

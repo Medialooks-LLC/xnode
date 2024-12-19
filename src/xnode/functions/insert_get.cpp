@@ -20,9 +20,9 @@ xnode::XNodeType xnode::NodeTypeGet(const XValue& _val)
 }
 
 INode::InsertRes xnode::NodeInsert(const INode::SPtr& _node_this,
-                                       const INode::SPtr& _node_insert,
-                                       bool               _replace_node,
-                                       const XKey&        _node_key)
+                                   const INode::SPtr& _node_insert,
+                                   bool               _replace_node,
+                                   const XKey&        _node_key)
 {
     if (!_node_this || !_node_insert)
         return {};
@@ -43,9 +43,9 @@ INode::InsertRes xnode::NodeInsert(const INode::SPtr& _node_this,
 }
 
 INode::InsertRes xnode::NodeConstInsert(const INode::SPtr&  _node_this,
-                                            const INode::SPtrC& _node_insert,
-                                            bool                _replace_node,
-                                            const XKey&         _node_key)
+                                        const INode::SPtrC& _node_insert,
+                                        bool                _replace_node,
+                                        const XKey&         _node_key)
 {
     if (!_node_this)
         return {};
@@ -66,9 +66,9 @@ INode::InsertRes xnode::NodeConstInsert(const INode::SPtr&  _node_this,
 }
 
 INode::SPtr xnode::NodeGetByKey(const INode::SPtr&             _node_this,
-                                    const XKey&                    _key,
-                                    std::optional<INode::NodeType> _node_type,
-                                    bool                           _convert_to_type)
+                                const XKey&                    _key,
+                                std::optional<INode::NodeType> _node_type,
+                                bool                           _convert_to_type)
 {
     if (!_node_this)
         return nullptr;
@@ -83,8 +83,8 @@ INode::SPtr xnode::NodeGetByKey(const INode::SPtr&             _node_this,
         if (!xval.IsEmpty() && !_convert_to_type)
             return nullptr;
 
-        if (!node_new_sp)
-            node_new_sp = xnode::Create(_node_type.value_or(INode::NodeType::Map));
+        if (!node_new_sp && _node_type.has_value())
+            node_new_sp = xnode::Create(_node_type.value());
         if (!node_new_sp)
             return nullptr;
 

@@ -12,9 +12,7 @@ namespace xsdk::impl {
 
 class XmlDocCreator {
 public:
-    XmlDocCreator(INode::SPtrC     _node,
-                  std::string_view _attribute_prefix,
-                  std::string_view _value_name);
+    XmlDocCreator(INode::SPtrC _node, std::string_view _attribute_prefix, std::string_view _value_name);
 
     XC::DOMDocument* GetDocument();
 
@@ -32,7 +30,7 @@ private:
     void AddArrayNode_(const INode::SPtrC& _node, XC::DOMElement* _parent);
     void AddArrayNodeAsText_(const INode::SPtrC& _node, XC::DOMElement* _parent);
 
-    std::string_view CutPrefix_(const XKey& key) const;
+    std::string_view CutPrefix_(const XKey& _key) const;
 
     static std::string GetNameForUnnamedNode_();
 };

@@ -6,7 +6,6 @@
 
 namespace xsdk::impl {
 
-
 XmlDocCreator::XmlDocCreator(INode::SPtrC _node, std::string_view _attribute_prefix, std::string_view _value_name)
     : root_node_(_node),
       attribute_prefix_(_attribute_prefix),
@@ -16,9 +15,9 @@ XmlDocCreator::XmlDocCreator(INode::SPtrC _node, std::string_view _attribute_pre
     tr_ = std::make_unique<impl::Transcoder>();
 }
 
-std::string_view XmlDocCreator::CutPrefix_(const XKey& key) const
+std::string_view XmlDocCreator::CutPrefix_(const XKey& _key) const
 {
-    return key.StringGet().value_or("").substr(pref_len_, key.StringGet().value_or("").size());
+    return _key.StringGet().value_or("").substr(pref_len_, _key.StringGet().value_or("").size());
 }
 
 XC::DOMDocument* XmlDocCreator::GetDocument()
@@ -44,10 +43,11 @@ XC::DOMDocument* XmlDocCreator::GetDocument()
                     root->appendChild(value);
                 }
                 else {
-                    if (key.StringGet()->rfind(attribute_prefix_, 0) == 0){ // starts with attribute_prefix_
+                    if (key.StringGet()->rfind(attribute_prefix_, 0) == 0) { // starts with attribute_prefix_
                         root->setAttribute(tr_->ToXmlChars(CutPrefix_(key).data())->data(),
                                            tr_->ToXmlChars(xval.String().data())->data());
-                    } else {
+                    }
+                    else {
                         auto element = doc_->createElement(
                             tr_->ToXmlChars(key.StringGet().value_or(GetNameForUnnamedNode_()).data())->data());
                         auto value = doc_->createTextNode(tr_->ToXmlChars(xval.String().data())->data());
@@ -69,16 +69,17 @@ void XmlDocCreator::AddNode_(const INode::SPtrC& _node, XC::DOMElement* _parent,
     }
     else {
         assert(_node->Type() == INode::NodeType::Array);
-        auto element_name = _node->IsName("") ? GetNameForUnnamedNode_() : _node->NameGet();
-        bool has_text_value     = false;
-        if (!_node->IsName("")){
-            auto has_same_name = _node->ParentGet()->IsName(element_name);
+        auto element_name   = _node->IsName("") ? GetNameForUnnamedNode_() : _node->NameGet();
+        bool has_text_value = false;
+        if (!_node->IsName("")) {
+            auto has_same_name  = _node->ParentGet()->IsName(element_name);
             auto has_value_name = _node->IsName(value_name_);
             has_text_value      = has_same_name || has_value_name;
         }
         if (has_text_value) {
             AddArrayNodeAsText_(_node, _parent);
-        } else {
+        }
+        else {
             AddArrayNode_(_node, _parent);
         }
     }
@@ -87,15 +88,16 @@ void XmlDocCreator::AddNode_(const INode::SPtrC& _node, XC::DOMElement* _parent,
 void XmlDocCreator::AddMapNode_(const INode::SPtrC& _node, XC::DOMElement* _parent, bool _wrapped)
 {
     XC::DOMElement* element;
-    std::string element_name;
+    std::string     element_name;
     if (_node->ParentGet()->Type() == INode::NodeType::Map || _wrapped) {
         element = doc_->createElement(tr_->ToXmlChars(_node->NameGet().data())->data());
     }
     else {
         assert(_node->ParentGet()->Type() == INode::NodeType::Array);
         if (_node->ParentGet()->IsName("")) {
-            element      = doc_->createElement(_parent->getTagName());
-        }else{
+            element = doc_->createElement(_parent->getTagName());
+        }
+        else {
             element = doc_->createElement(tr_->ToXmlChars(_node->ParentGet()->NameGet().data())->data());
         }
     }
@@ -114,9 +116,9 @@ void XmlDocCreator::AddMapNode_(const INode::SPtrC& _node, XC::DOMElement* _pare
                 element->appendChild(value);
             }
             else {
-                if (key.StringGet()->rfind(attribute_prefix_, 0) == 0){// starts with attribute_prefix_
+                if (key.StringGet()->rfind(attribute_prefix_, 0) == 0) { // starts with attribute_prefix_
                     element->setAttribute(tr_->ToXmlChars(CutPrefix_(key).data())->data(),
-                                       tr_->ToXmlChars(xval.String().data())->data());
+                                          tr_->ToXmlChars(xval.String().data())->data());
                 }
                 else {
                     auto element_wrap = doc_->createElement(
@@ -154,7 +156,8 @@ void XmlDocCreator::AddArrayNode_(const INode::SPtrC& _node, XC::DOMElement* _pa
     }
 }
 
-void XmlDocCreator::AddArrayNodeAsText_(const INode::SPtrC& _node, XC::DOMElement* _parent) {
+void XmlDocCreator::AddArrayNodeAsText_(const INode::SPtrC& _node, XC::DOMElement* _parent)
+{
     auto element = _parent;
     for (const auto& [key, xval] : _node->BulkGetAll()) {
         auto child_node = xval.QueryPtrC<INode>();
@@ -162,7 +165,7 @@ void XmlDocCreator::AddArrayNodeAsText_(const INode::SPtrC& _node, XC::DOMElemen
             AddNode_(child_node, element, true);
         }
         else {
-            auto value   = doc_->createTextNode(tr_->ToXmlChars(xval.String().data())->data());
+            auto value = doc_->createTextNode(tr_->ToXmlChars(xval.String().data())->data());
             element->appendChild(value);
         }
     }

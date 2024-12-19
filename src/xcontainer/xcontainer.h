@@ -15,7 +15,6 @@ namespace xsdk {
 class IContainer: public xbase::PtrBase<IContainer> {
 
 public:
-    
     // For std::map etc. partial interoperability (e.g. for tests)
     using KeyType    = std::variant<std::monostate, size_t, std::string>;
     using MappedType = XValueRT;
@@ -32,8 +31,8 @@ public:
     virtual ContainerType Type() const = 0;
     // Return
     virtual bool   IsKeyValid(const KeyType& _key) const = 0;
-    virtual size_t Size() const                            = 0;
-    virtual bool   Empty() const                           = 0;
+    virtual size_t Size() const                          = 0;
+    virtual bool   Empty() const                         = 0;
 
     // Return nullopt if not found
     virtual std::optional<MappedType> At(const KeyType& _key) const = 0;
@@ -41,20 +40,20 @@ public:
     // Method: return 'false' if empty or key not found
     // Callback: return 'true' for stop enumeration
     virtual bool ForPatch(std::function<bool(const KeyType&, const MappedType&)>&& _pf_on_item,
-                           const std::optional<KeyType>&                            _from_key = std::nullopt) const
+                          const std::optional<KeyType>&                            _from_key = std::nullopt) const
     {
         return ForEach(std::move(_pf_on_item), _from_key);
     }
     // Method: return 'false' if empty or key not found
     // Callback: return 'true' for stop enumeration
     virtual bool ForEach(std::function<bool(const KeyType&, const MappedType&)>&& _pf_on_item,
-                          const std::optional<KeyType>&                            _from_key = std::nullopt) const = 0;
+                         const std::optional<KeyType>&                            _from_key = std::nullopt) const = 0;
     // Return 'false' if empty or key not found
     // Callback: return: next, Erase, erase_stop, stop (see OnEachRes in xdefines.h)
     //           item could be modified in callback, but modification should be approved via 'on_change' cb
     virtual bool ForEach(std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_item,
-                          const std::optional<KeyType>&                           _from_key     = std::nullopt,
-                          const OnChangePF&                                       _pf_on_change = nullptr) = 0;
+                         const std::optional<KeyType>&                           _from_key     = std::nullopt,
+                         const OnChangePF&                                       _pf_on_change = nullptr) = 0;
     // Return {succcess, previous value}
     virtual std::pair<bool, MappedType> Set(const KeyType&    _key,
                                             MappedType&&      _val,

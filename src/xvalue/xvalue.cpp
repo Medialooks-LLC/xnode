@@ -1,5 +1,4 @@
 #include "xvalue/xvalue.h"
-#include "../common/variant_utils.h"
 
 #include <cassert>
 #include <cmath>
@@ -11,7 +10,7 @@ namespace xsdk {
 template <typename TCheck>
 constexpr std::size_t XValueIndex()
 {
-    return xnode::impl::VariantIndex<XVariant, TCheck>();
+    return xbase::VariantIndex<XVariant, TCheck>();
 }
 
 XValue& XValue::operator=(const XValue& _val)
@@ -135,6 +134,21 @@ bool XValue::IsInteger() const noexcept
     return false;
 }
 
+bool XValue::IsNumberConvertable() const noexcept
+{
+    switch (index()) {
+        case XValueIndex<bool>():
+        case XValueIndex<int64_t>():
+        case XValueIndex<uint64_t>():
+        case XValueIndex<double>():
+        case XValueIndex<xnode::String::SPtrC>():
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 void XValue::Reset() { XVariant::emplace<std::monostate>(); }
 
 bool XValue::IsEmpty() const noexcept
@@ -153,7 +167,7 @@ bool XValue::IsEmpty() const noexcept
     }
 }
 
-bool XValue::Bool(bool _default) const
+bool XValue::Bool(const bool _default) const
 {
     switch (index()) {
         case XValueIndex<bool>():
@@ -175,7 +189,7 @@ bool XValue::Bool(bool _default) const
     }
 }
 
-int64_t XValue::Int64(int64_t _default) const
+int64_t XValue::Int64(const int64_t _default) const
 {
     switch (index()) {
         case XValueIndex<bool>():
@@ -183,7 +197,8 @@ int64_t XValue::Int64(int64_t _default) const
         case XValueIndex<int64_t>():
             return std::get<int64_t>(*this);
         case XValueIndex<uint64_t>():
-            return (int64_t)std::min(std::get<uint64_t>(*this), (uint64_t)std::numeric_limits<int64_t>::max());
+            return xbase::Clamp<int64_t>(std::get<uint64_t>(*this));
+            // return (int64_t)std::min(std::get<uint64_t>(*this), (uint64_t)std::numeric_limits<int64_t>::max());
         case XValueIndex<double>():
             return std::llround(std::get<double>(*this));
         case XValueIndex<xnode::String::SPtrC>(): {
@@ -199,7 +214,7 @@ int64_t XValue::Int64(int64_t _default) const
     }
 }
 
-uint64_t XValue::Uint64(uint64_t _default, uint64_t _negative_res) const
+uint64_t XValue::Uint64(const uint64_t _default, const uint64_t _negative_res) const
 {
     switch (index()) {
         case XValueIndex<bool>(): {
@@ -232,22 +247,24 @@ uint64_t XValue::Uint64(uint64_t _default, uint64_t _negative_res) const
     }
 }
 
-int32_t XValue::Int32(int32_t _default) const
+int32_t XValue::Int32(const int32_t _default) const
 {
-    auto ll = Int64(_default);
-    return ll < std::numeric_limits<int32_t>::min() ? std::numeric_limits<int32_t>::min() :
-           ll > std::numeric_limits<int32_t>::max() ? std::numeric_limits<int32_t>::max() :
-                                                      static_cast<int32_t>(ll);
+    return xbase::Clamp<int32_t>(Int64(_default));
+    // auto ll = Int64(_default);
+    // return ll < std::numeric_limits<int32_t>::min() ? std::numeric_limits<int32_t>::min() :
+    //        ll > std::numeric_limits<int32_t>::max() ? std::numeric_limits<int32_t>::max() :
+    //                                                   static_cast<int32_t>(ll);
 }
 
-uint32_t XValue::Uint32(uint32_t _default, uint32_t _negative_res) const
+uint32_t XValue::Uint32(const uint32_t _default, const uint32_t _negative_res) const
 {
-    auto ull = Uint64(_default, _negative_res);
-    return ull > std::numeric_limits<uint32_t>::max() ? std::numeric_limits<uint32_t>::max() :
-                                                        static_cast<uint32_t>(ull);
+    return xbase::Clamp<uint32_t>(Uint64(_default, _negative_res));
+    // auto ull = Uint64(_default, _negative_res);
+    // return ull > std::numeric_limits<uint32_t>::max() ? std::numeric_limits<uint32_t>::max() :
+    //                                                     static_cast<uint32_t>(ull);
 }
 
-double XValue::Double(double _default) const
+double XValue::Double(const double _default) const
 {
     switch (index()) {
         case XValueIndex<bool>():
@@ -265,7 +282,7 @@ double XValue::Double(double _default) const
     }
 }
 
-std::string XValue::String(std::string_view _default) const
+std::string XValue::String(const std::string_view _default) const
 {
     switch (index()) {
         case XValueIndex<bool>():
@@ -283,7 +300,7 @@ std::string XValue::String(std::string_view _default) const
     }
 }
 
-std::string_view XValue::StringView(std::string_view _default) const
+std::string_view XValue::StringView(const std::string_view _default) const
 {
     const auto* pp_str = std::get_if<xnode::String::SPtrC>(this);
     if (pp_str && *pp_str)
@@ -292,7 +309,7 @@ std::string_view XValue::StringView(std::string_view _default) const
     return _default;
 }
 
-IObject::SPtr XValue::ObjectPtr(IObject::SPtr _default) const
+IObject::SPtr XValue::ObjectPtr(const IObject::SPtr& _default) const
 {
     auto pp_obj = std::get_if<IObject::SPtr>(this);
     assert(!pp_obj || *pp_obj);
@@ -302,7 +319,7 @@ IObject::SPtr XValue::ObjectPtr(IObject::SPtr _default) const
     return _default;
 }
 
-IObject::SPtrC XValue::ObjectPtrC(IObject::SPtrC _default) const
+IObject::SPtrC XValue::ObjectPtrC(const IObject::SPtrC& _default) const
 {
     auto pp_c_obj = std::get_if<IObject::SPtrC>(this);
     assert(!pp_c_obj || *pp_c_obj);
@@ -315,6 +332,105 @@ IObject::SPtrC XValue::ObjectPtrC(IObject::SPtrC _default) const
         return *pp_obj;
 
     return _default;
+}
+
+template <>
+std::optional<bool> XValue::OptionalGet<bool>() const
+{
+    if (IsNumberConvertable())
+        return Uint64();
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<float> XValue::OptionalGet<float>() const
+{
+    if (IsNumberConvertable())
+        return static_cast<float>(Double());
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<double> XValue::OptionalGet<double>() const
+{
+    if (IsNumberConvertable())
+        return Double();
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<int64_t> XValue::OptionalGet<int64_t>() const
+{
+    if (IsNumberConvertable())
+        return Int64();
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<uint64_t> XValue::OptionalGet<uint64_t>() const
+{
+    if (IsNumberConvertable())
+        return Uint64();
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<int32_t> XValue::OptionalGet<int32_t>() const
+{
+    if (IsNumberConvertable())
+        return xbase::Clamp<int32_t>(Int64());
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<uint32_t> XValue::OptionalGet<uint32_t>() const
+{
+    if (IsNumberConvertable())
+        return xbase::Clamp<uint32_t>(Uint64());
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<int16_t> XValue::OptionalGet<int16_t>() const
+{
+    if (IsNumberConvertable())
+        return xbase::Clamp<int16_t>(Int64());
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<uint16_t> XValue::OptionalGet<uint16_t>() const
+{
+    if (IsNumberConvertable())
+        return xbase::Clamp<uint16_t>(Uint64());
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<std::string> XValue::OptionalGet<std::string>() const
+{
+    if (Type() == XValue::kString)
+        return String();
+
+    return std::nullopt;
+}
+
+template <>
+std::optional<std::string_view> XValue::OptionalGet<std::string_view>() const
+{
+    if (Type() == XValue::kString)
+        return StringView();
+
+    return std::nullopt;
 }
 
 } // namespace xsdk

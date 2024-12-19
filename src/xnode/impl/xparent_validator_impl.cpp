@@ -26,13 +26,19 @@ std::pair<IContainer::KeyType, IContainer::MappedType> XParentValidatorArray::Fi
 
 IContainer::KeyType XParentValidatorArray::RemoveDuplicates(IContainer*            _container_p,
                                                             IContainer::MappedType _value_remove,
-                                                            IContainer::KeyType    _key_keep) const
+                                                            IContainer::KeyType    _key_ignored) const
 {
     assert(_container_p);
+    if (_container_p->Size() <= 1)
+        return {};
 
+    
     IContainer::KeyType key_removed;
+    // Fix for idx_last
+    IContainer::KeyType key_ignored = (_key_ignored == IContainer::KeyType(kIdxLast) ? _container_p->Size() - 1 :
+                                                                                       _key_ignored);
     _container_p->ForEach([&](const auto& key, const auto& val) {
-        if (key != _key_keep && val == _value_remove) {
+        if (key != key_ignored && val == _value_remove) {
             key_removed = key;
             return OnEachRes::EraseStop;
         }

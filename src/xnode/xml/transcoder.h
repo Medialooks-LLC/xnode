@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "xercesc/util/TransService.hpp"
 

@@ -1,6 +1,6 @@
 #include "xkey/xkey.h"
-#include "xvalue/xvalue.h"
 #include "xobject_demo/xobject_demo.h"
+#include "xvalue/xvalue.h"
 
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -36,6 +36,5 @@ TEST(xkey_tests, map_with_xkey)
 
     EXPECT_TRUE(mapTest[17].StringView().empty());
 }
-
 
 // NOLINTEND(*)

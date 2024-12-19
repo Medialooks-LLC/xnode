@@ -1,9 +1,9 @@
 #pragma once
 
+#include "xbase.h"
 #include "xconstant.h"
 #include "xkey/xkey.h"
 #include "xvalue/xvalue_rt.h"
-#include "xbase.h"
 
 #include <deque>
 #include <functional>
@@ -18,13 +18,6 @@
 namespace xsdk {
 
 class INode: public IObject {
-    // 2think: about using ?
-    // using key_vec        = std::vector<XKey>;
-    // using value_vec      = std::vector<XValue>;
-    // using key_value_vec  = std::vector<std::pair<XKey, XValue>>;
-    // using key_node_vec   = std::vector<std::pair<XKey, INode::SPtr>>;
-    // using key_node_c_vec = std::vector<std::pair<XKey, INode::SPtrC>>;\
-
 public:
     // Declate shared, unique, weak pts (for override PtrBase<IObject> in base class)
     USING_PTRS(INode)
@@ -64,17 +57,18 @@ public:
          *
          * This reason is sent when an operation that resulted in changes has been rolled back, undoing those changes.
          */
-        Rollback };
+        Rollback
+    };
 
     /**
      * @brief Defines a function type alias for an OnChange callback function.
      *
      * This callback function takes the following arguments:
-     * @tparam CallbackReason   The reason for the callback being invoked. @See CallbackReason.
-     * @tparam SPtrC            A shared pointer to the node that triggered the change.
-     * @tparam XKey             The key of element that was modified.
-     * @tparam XValueRT         The previous value of the element.
-     * @tparam XValueRT         The new value of the element.
+     * @param _reason     The reason for the callback being invoked. @See CallbackReason.
+     * @param _node       A shared pointer to the node that triggered the change.
+     * @param _key        The key of element that was modified.
+     * @param _prev_value The previous value of the element.
+     * @param _new_value  The new value of the element.
      *
      * The function should return one of the following:
      * - If the function allows the change to proceed, return `true`.
@@ -83,8 +77,11 @@ public:
      * @note Return value doesn't matter if CallbackReason was set to ChangesNoDiscard or Rollback.
      * @see @ref callback_usage_example.cpp "Callback usage example"
      */
-    using OnChangePF = std::function<
-        std::optional<bool>(CallbackReason, const INode::SPtrC&, const XKey&, const XValueRT&, const XValueRT&)>;
+    using OnChangePF = std::function<std::optional<bool>(CallbackReason      _reason,
+                                                         const INode::SPtrC& _node,
+                                                         const XKey&         _key,
+                                                         const XValueRT&     _prev_value,
+                                                         const XValueRT&     _new_value)>;
     /**
      * @example{lineno} callback_usage_example.cpp
      * This is an example of how to use the OnChange callbacks.
@@ -115,14 +112,16 @@ public:
      * @return INode::SPtr to the parent node, or nullptr if the
      *         node has no parent.
      */
-    virtual INode::SPtr  ParentGet()       = 0;
+    virtual INode::SPtr ParentGet() = 0;
     /**
      * @brief                       Sets a new parent node for the current node.
-     * @param _parent               An optional pointer to a parent node. If nullptr, this function detach the current parent.
+     * @param _parent               An optional pointer to a parent node. If nullptr, this function detach the current
+     * parent.
      * @param _name_for_new_parent  An optional name to give to the current node in the new parent node.
      * @return                      A pair containing two items.
      *                               - The first value is a bool indicating if the operation was successful or not.
-     *                               - The second value is the previous parent node or a nullptr if no parent node existed before.
+     *                               - The second value is the previous parent node or a nullptr if no parent node
+     * existed before.
      * @note:                       Name chnaged ONLY if parent update (2Think!)
      */
     virtual std::pair<bool, INode::SPtr> ParentSet(
@@ -133,7 +132,7 @@ public:
      * @return INode::SPtr to the parent node, or nullptr if the
      *         node has no parent.
      */
-    virtual INode::SPtr ParentDetach()                                       = 0;
+    virtual INode::SPtr ParentDetach() = 0;
     ///@}
 
     ///@name Node name methods
@@ -142,7 +141,7 @@ public:
      * @brief  Function to get the name of this node.
      * @return The name of the node.
      */
-    virtual std::string                  NameGet() const                                          = 0;
+    virtual std::string NameGet() const = 0;
     /**
      * @brief                Function to set the name of this node.
      * @param _name_set      The new name of the node.
@@ -158,7 +157,7 @@ public:
      * @param _name_check The name to check against.
      * @return            \c true if the name matches, \c false otherwise.
      */
-    virtual bool                         IsName(std::string_view _name_check) const               = 0;
+    virtual bool IsName(std::string_view _name_check) const = 0;
     ///@}
 
     ///@name OnChange callback methods
@@ -180,13 +179,13 @@ public:
      * @return    \c true if the callback function was found and removed, \c false if it wasn't.
      * @see @ref callback_usage_example.cpp "Callback usage example"
      */
-    virtual bool     OnChangeRemove(uint64_t _id) const                              = 0;
+    virtual bool OnChangeRemove(uint64_t _id) const = 0;
     /**
      * @brief  Reset all the callbacks.
      * @return The number of callbacks removed.
      * @see @ref callback_usage_example.cpp "Callback usage example"
      */
-    virtual size_t   OnChangeReset() const                                           = 0;
+    virtual size_t OnChangeReset() const = 0;
     ///@}
 
     //-------------------------------------------------------------------------------
@@ -198,21 +197,21 @@ public:
      * @param _key                   The key to check.
      * @return                       \c true if the key is valid, else \c false.
      */
-    virtual bool     IsKeyValid(bool _map_access_by_index, const XKey& _key) const = 0;
+    virtual bool IsKeyValid(bool _map_access_by_index, const XKey& _key) const = 0;
     /**
      * @brief   Erases all elements from the container.
      * @details This method iterates over the nodes in the container and detach all nodes
      * that have an associated with that one. It then clears the container of other elements.
      */
-    virtual void     Clear()                                                       = 0;
+    virtual void Clear() = 0;
     /**
      * @brief Return the number of elements in the container.
      */
-    virtual size_t   Size() const                                                  = 0;
+    virtual size_t Size() const = 0;
     /**
      * @brief Checks if the container has no elements or, in other words, if the node has no children.
      */
-    virtual bool     Empty() const                                                 = 0;
+    virtual bool Empty() const = 0;
 
     /**
      * @brief       Find the value associated with the given key in this node.
@@ -221,23 +220,23 @@ public:
      * @note        This method provides the same functionality as At(const XKey& _key), but
      *       returns a constant reference.
      */
-    virtual XValueRT At(const XKey& _key) const                                    = 0;
+    virtual XValueRT At(const XKey& _key) const = 0;
     /**
      * @brief       Find the value associated with the given key in this node.
      * @param _key  The key.
      * @return      The XValueRT (value with timestamp) associated with the given key, or an empty value.
      */
-    virtual XValueRT At(const XKey& _key)                                          = 0;
+    virtual XValueRT At(const XKey& _key) = 0;
 
     /**
-    * @brief                Iterate over the node items and apply the specified function on each item.
-    * @param _pf_on_item    Function that will be applied to each item in the container.
-    * @param   _from_key    The starting key in the container. If set to the empty key (default),
-    *                       the function will be called on all items in the container.
-    * @returns              false if container is empty or _from_key not found
-    * @note                 Do not allow for change to nodes.
-    * @note                 Also iterate through removed nodes too.
-    */
+     * @brief                Iterate over the node items and apply the specified function on each item.
+     * @param _pf_on_item    Function that will be applied to each item in the container.
+     * @param   _from_key    The starting key in the container. If set to the empty key (default),
+     *                       the function will be called on all items in the container.
+     * @returns              false if container is empty or _from_key not found
+     * @note                 Do not allow for change to nodes.
+     * @note                 Also iterate through removed nodes too.
+     */
     virtual bool ForPatch(std::function<bool(const XKey&, const XValueRT&)>&& _pf_on_item,
                           const XKey&                                         _from_key = XKey()) const = 0;
 
@@ -279,11 +278,11 @@ public:
         /**
          * @brief Indicates whether the insertion was successful.
          */
-        bool     succeeded = false;
+        bool succeeded = false;
         /**
          * @brief The key of the inserted element.
          */
-        XKey     inserted_at;
+        XKey inserted_at;
         /**
          * @brief The value that was present at the insertion position, if any.
          */
@@ -331,7 +330,7 @@ public:
      * @return              The updated XValueRT for the key.
      * @note                This method uses a read-write lock to ensure thread safety.
      */
-    virtual XValueRT Append(const XKey& _key, std::string_view _append_str)    = 0;
+    virtual XValueRT Append(const XKey& _key, std::string_view _append_str) = 0;
     /**
      * @brief                 Increment the value of the container for the given key with the provided increment_val.
      * @param _key            The key for the container.
@@ -361,8 +360,8 @@ public:
     // Return vector of {key, value} of taken elements byf specified keys
     /**
      * @brief Bulk retrieves values for given keys without a custom callback function.
-     * @details The BulkGet method without a custom callback function retrieves values for multiple keys at once, returning them
-     * as a vector of pairs: {key, value}.
+     * @details The BulkGet method without a custom callback function retrieves values for multiple keys at once,
+     * returning them as a vector of pairs: {key, value}.
      * @param _keys Vector of keys to retrieve values for.
      * @return A vector of pairs: {key, value} for using them read only.
      */
@@ -374,14 +373,14 @@ public:
      * @param _keys Vector of keys to retrieve values for.
      * @return A vector of pairs: {key, value}.
      */
-    virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys)       = 0;
+    virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) = 0;
 
     // Return vector of {key, value} of taken elements, take or not elements decided by callback res,
     // - default(empty) callback is OnCopyRes::Take
     /**
      * @brief Bulk retrieves all values in the container.
-     * @details Return a vector of {key, value} of taken elements, the result of callback decides whether or not to take items.
-     * If no callback has been set, all elements are get. @see OnCopyRes::Take
+     * @details Return a vector of {key, value} of taken elements, the result of callback decides whether or not to take
+     * items. If no callback has been set, all elements are get. @see OnCopyRes::Take
      * @param _pf_on_item Callback function to process each item.
      * @param _key_begin Beginning of the range of keys, or an empty optional if retrieving all keys.
      * @return A vector of pairs: {key, value} for using them read only.
@@ -403,14 +402,16 @@ public:
 
     /**
      * @brief Sets multiple new children for the node in one call.
-     * @param[in,out] _values List of new children with their corresponding keys. Successfully set elements are removed from the vector of values.
+     * @param[in,out] _values List of new children with their corresponding keys. Successfully set elements are removed
+     * from the vector of values.
      * @return Number of successfully set children.
      */
     virtual size_t BulkSet(std::vector<std::pair<XKey, XValue>>&& _values) = 0;
 
     /**
      * @brief Inserts multiple key-value pairs into the container.
-     * @param[in,out] _values A vector of key-value pairs to be inserted. Successfully inserted elements are removed from the vector of values.
+     * @param[in,out] _values A vector of key-value pairs to be inserted. Successfully inserted elements are removed
+     * from the vector of values.
      * @return The number of elements successfully inserted.
      */
     virtual size_t BulkInsert(std::vector<std::pair<XKey, XValue>>&& _values) = 0;
@@ -418,7 +419,8 @@ public:
     /**
      * @brief Inserts multiple new values into the array node.
      * @param _insert_pos The position to insert the nodes.
-     * @param[in,out] _values The vector of new values to be inserted. Successfully inserted elements are removed from the vector of values.
+     * @param[in,out] _values The vector of new values to be inserted. Successfully inserted elements are removed from
+     * the vector of values.
      * @return A std::pair containing the number of values that were successfully inserted and
      * the key of the last inserted value.
      * @note The method is acceptable only for a node of array type.

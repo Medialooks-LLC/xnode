@@ -19,3 +19,8 @@ class xSDK(ConanFile):
         tc = CMakeDeps(self)
         tc.generate()
 
+        rapidjson_folder = self.dependencies["rapidjson"].package_folder
+        self.output.info("rapidjson folder: {}".format(rapidjson_folder))
+
+        xerces_lib_folder = self.dependencies["xerces-c"].cpp_info.libdir
+        self.output.info("xerces-c lib folder: {}".format(xerces_lib_folder))

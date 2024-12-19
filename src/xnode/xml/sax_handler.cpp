@@ -1,8 +1,8 @@
 #include "sax_handler.h"
 
 #include "transcoder.h"
-#include "xnode_interfaces.h"
 #include "xnode_functions.h"
+#include "xnode_interfaces.h"
 
 #include <iostream>
 #include <iterator>
@@ -49,7 +49,7 @@ void XNodeSaxHandler::startElement(const XMLCh* const    _uri,
 
 void XNodeSaxHandler::characters(const XMLCh* const _chars, const XMLSize_t _length)
 {
-    key_ = value_name_;
+    key_     = value_name_;
     auto val = coder_->ToString(_chars);
     if (is_formating(val))
         return;
@@ -117,9 +117,7 @@ void XNodeSaxHandler::StoreNodesOrder_()
 
 void XNodeSaxHandler::PutNode_(std::string_view _node_name)
 {
-    auto key    = root ? root_name_.empty()
-                       ? _node_name : root_name_
-                                    : _node_name;
+    auto key = root ? root_name_.empty() ? _node_name : root_name_ : _node_name;
 
     key_        = key;
     auto node_p = xnode::Create(INode::NodeType::Map, key, nodes_stack_.empty() ? root_uid_ : 0);
@@ -220,8 +218,7 @@ void XNodeSaxHandler::CollapseArrayNodes_(const INode::SPtr& _node)
 {
     auto parent_name = _node->NameGet();
     auto to_update   = std::vector<XKey> {};
-    _node->ForEach([&v_name = value_name_, &attr_prefix = attr_prefix_, &parent_name, &to_update](const XKey& _key,
-                                                                                                  XValueRT&   _value) {
+    _node->ForEach([&attr_prefix = attr_prefix_, &to_update](const XKey& _key, XValueRT& _value) {
         auto child = _value.QueryPtr<INode>();
         if (child && child->Size() == 1) {
             auto elements = child->BulkGetAll(); // how to get name of element
@@ -274,9 +271,9 @@ void XNodeSaxHandler::ConvertToArray_(const INode::SPtr& _node)
     auto is_empty_node_with_map_parent = _node->Size() == 0 && _node->ParentGet() &&
                                          _node->ParentGet()->Type() == INode::NodeType::Map;
     if (is_empty_node_with_map_parent) {
-        auto parent  = _node->ParentDetach();
+        auto parent      = _node->ParentDetach();
         auto arr_wrapper = WrapToNode_(node_arr);
-        auto success = parent->Set(_node->NameGet(), arr_wrapper).first;
+        auto success     = parent->Set(_node->NameGet(), arr_wrapper).first;
         assert(success);
     }
     else {

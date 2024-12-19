@@ -34,10 +34,10 @@ size_t XNodeCallbacks::OnChangeReset()
 }
 
 bool XNodeCallbacks::DoCallbacks(const INode::SPtrC& _node,
-                                   const XKey&         _key,
-                                   const XValueRT&    _from,
-                                   const XValueRT&    _to,
-                                   bool                _no_discard)
+                                 const XKey&         _key,
+                                 const XValueRT&     _from,
+                                 const XValueRT&     _to,
+                                 bool                _no_discard)
 {
     std::shared_lock lck(map_rw_);
 

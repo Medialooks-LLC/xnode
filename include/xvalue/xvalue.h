@@ -1,8 +1,8 @@
 #pragma once
 
-#include "xconstant.h"
-#include "xbase.h"
 #include "../xstring.h"
+#include "xbase.h"
+#include "xconstant.h"
 
 #include <memory>
 #include <string>
@@ -21,39 +21,46 @@ using XValueNull = const void*;
  * @brief XVariant is a variant type template which can store various values: monostate,
  * empty, null, bool, integers, floating-point numbers, strings, and objects.
  */
-using XVariant = std::
-    variant<std::monostate, XValueNull, bool, int64_t, uint64_t, double, xnode::String::SPtrC, IObject::SPtrC, IObject::SPtr>;
+using XVariant = std::variant<std::monostate,
+                              XValueNull,
+                              bool,
+                              int64_t,
+                              uint64_t,
+                              double,
+                              xnode::String::SPtrC,
+                              IObject::SPtrC,
+                              IObject::SPtr>;
 
 /**
-* @brief A utility class used for storing and manipulating values.
-* @details It provides a generic variant type with a number of constructor overloads for common types,
-* as well as a set of utility methods to extract and convert these values.
-*/
+ * @brief A utility class used for storing and manipulating values.
+ * @details It provides a generic variant type with a number of constructor overloads for common types,
+ * as well as a set of utility methods to extract and convert these values.
+ */
 class XValue: protected XVariant {
 
 public:
     /// @brief The XValue enum defines various value types.
     enum ValueType {
-        kAny      = -1,
+        kAny = -1,
         /// Represents an non constant value flag.
         kNonConst = 0x100,
 
         /// Represents an empty XValue.
-        kEmpty       = 0x00,
+        kEmpty = 0x00,
         /// Represents a null XValue.
-        kNull        = 0x01,
+        kNull = 0x01,
         /// Represents a boolean XValue.
-        kBool        = 0x02,
+        kBool = 0x02,
         /// Represents a 64-bit integer XValue.
-        kInt64       = 0x04,
+        kInt64 = 0x04,
         /// Represents a 64-bit unsigned integer XValue.
-        kUint64      = 0x08,
+        kUint64 = 0x08,
         /// Represents a double XValue.
-        kDouble      = 0x10,
+        kDouble = 0x10,
         /// Represents a string XValue.
-        kString      = 0x20,
+        kString = 0x20,
         /// Represents an object XValue.
-        kObject      = 0x40 | kNonConst,
+        kObject = 0x40 | kNonConst,
         /// Represents a const object XValue.
         kConstObject = kObject & ~kNonConst,
         /// A mask for number types.
@@ -66,7 +73,7 @@ public:
     /// @brief Move constructor
     XValue(XValue&&) noexcept = default;
     /// @brief Copy constructor
-    XValue(const XValue&)     = default;
+    XValue(const XValue&) = default;
 
     // xo_empty
     /** @brief Default constructor.*/
@@ -196,12 +203,12 @@ public:
     XValue& operator=(const XValue& _val);
     XValue& operator=(XValue&& _val) noexcept;
 
-    bool    operator==(const XValue& _val) const;
-    bool    operator!=(const XValue& _val) const { return !(*this == _val); }
-    bool    operator<(const XValue& _val) const { return Compare(_val) < 0; }
-    bool    operator<=(const XValue& _val) const { return Compare(_val) <= 0; }
-    bool    operator>(const XValue& _val) const { return Compare(_val) > 0; }
-    bool    operator>=(const XValue& _val) const { return Compare(_val) >= 0; }
+    bool operator==(const XValue& _val) const;
+    bool operator!=(const XValue& _val) const { return !(*this == _val); }
+    bool operator<(const XValue& _val) const { return Compare(_val) < 0; }
+    bool operator<=(const XValue& _val) const { return Compare(_val) <= 0; }
+    bool operator>(const XValue& _val) const { return Compare(_val) > 0; }
+    bool operator>=(const XValue& _val) const { return Compare(_val) >= 0; }
     /**
      * @brief Compares this XValue with another XValue.
      * @return A negative value if this XValue is less than _val, zero if they are equal, and a positive value if this
@@ -212,51 +219,53 @@ public:
     /// @brief Returns the value type of this XValue.
     ValueType Type() const noexcept;
     /// @brief Checks if this XValue is empty.
-    bool      IsEmpty() const noexcept;
+    bool IsEmpty() const noexcept;
     /// @brief Checks if this XValue is an object.
-    bool      IsObject() const noexcept;
+    bool IsObject() const noexcept;
     /// @brief Checks if this XValue is an attribute.
-    bool      IsAttribute() const noexcept;
+    bool IsAttribute() const noexcept;
     /// @brief Checks if this XValue is an integer.
-    bool      IsInteger() const noexcept;
+    bool IsInteger() const noexcept;
+    /// @brief Checks if this XValue is an number convertable (e.g. numbers and strings).
+    bool IsNumberConvertable() const noexcept;
 
     /// @brief Resets the value of this XValue to its default state (std::monostate).
     void Reset();
 
     /// @brief Retrieves the boolean value of this XValue.
     /// @note If the XValue type is different from bool, the value will be converted to it.
-    bool             Bool(bool _default = false) const;
+    bool Bool(const bool _default = false) const;
     /// @brief Retrieves the 64-bit signed integer value of this XValue.
     /// @note If the XValue type is different from 64-bit signed integer, the value will be converted to it.
-    int64_t          Int64(int64_t _default = 0) const;
+    int64_t Int64(const int64_t _default = 0) const;
     /// @brief Retrieves the 64-bit unsigned integer value of this XValue.
     /// @note If the XValue type is different from 64-bit unsigned integer, the value will be converted to it.
     /// If resulting value is negative then returned _negative_res value.
-    uint64_t         Uint64(uint64_t _default = 0, uint64_t _negative_res = 0) const;
+    uint64_t Uint64(const uint64_t _default = 0, const uint64_t _negative_res = 0) const;
     /// @brief Retrieves the 32-bit signed integer value of this XValue.
     /// @note If the XValue type is different from 32-bit signed integer, the value will be converted to it.
-    int32_t          Int32(int32_t _default = 0) const;
+    int32_t Int32(const int32_t _default = 0) const;
     /// @brief Retrieves the 32-bit unsigned integer value of this XValue.
     /// @note If the XValue type is different from 32-bit unsigned integer, the value will be converted to it.
     /// /// If resulting value is negative then returned _negative_res value.
-    uint32_t         Uint32(uint32_t _default = 0, uint32_t _negative_res = 0) const;
+    uint32_t Uint32(const uint32_t _default = 0, const uint32_t _negative_res = 0) const;
     /// @brief Retrieves the double value of this XValue.
     /// @note If the XValue type is different from double, the value will be converted to it.
-    double           Double(double _default = 0.0) const;
+    double Double(const double _default = 0.0) const;
     /// @brief Retrieves the string value of this XValue.
     /// @note If the XValue type is different from string, the value will be converted to it.
-    std::string      String(std::string_view _default = {}) const;
+    std::string String(const std::string_view _default = {}) const;
     /// @brief Retrieves the string_view value of this XValue.
-    std::string_view StringView(std::string_view _default = {}) const;
+    std::string_view StringView(const std::string_view _default = {}) const;
     /// @brief Retrieves the object pointer of this XValue.
-    IObject::SPtr    ObjectPtr(IObject::SPtr _default = nullptr) const;
+    IObject::SPtr ObjectPtr(const IObject::SPtr& _default = nullptr) const;
     /// @brief Retrieves the object pointer constant of this XValue.
-    IObject::SPtrC   ObjectPtrC(IObject::SPtrC _default = nullptr) const;
+    IObject::SPtrC ObjectPtrC(const IObject::SPtrC& _default = nullptr) const;
 
     /// @brief Retrieves a shared_ptr of a TObject from this XValue.
     /// @tparam TObject The object type.
     template <typename TObject>
-    std::shared_ptr<TObject> QueryPtr(std::shared_ptr<TObject> _default = nullptr) const
+    std::shared_ptr<TObject> QueryPtr(const std::shared_ptr<TObject>& _default = nullptr) const
     {
         auto sp_obj = xobject::PtrQuery<TObject>(ObjectPtr().get());
         return sp_obj ? sp_obj : _default;
@@ -265,11 +274,54 @@ public:
     /// @brief Retrieves a shared_ptr of a const TObject from this XValue.
     /// @tparam TObject The object type.
     template <typename TObject>
-    std::shared_ptr<const TObject> QueryPtrC(std::shared_ptr<const TObject> _default = nullptr) const
+    std::shared_ptr<const TObject> QueryPtrC(const std::shared_ptr<const TObject>& _default = nullptr) const
     {
         auto sp_obj = xobject::PtrQuery<TObject>(ObjectPtrC().get());
         return sp_obj ? sp_obj : _default;
     }
+
+    /// @brief Retrieves a XENUM from this XValue.
+    /// @tparam TObject The object type.
+    template <typename TEnum>
+    TEnum EnumGet(const TEnum _default = {}) const
+    {
+        return xenum::FromString(String(), _default);
+    }
+
+    /// @brief Retrieves a specicified optional type from this XValue, if value not suitable, returned
+    /// std::nullopt
+    template <typename TGet>
+    std::optional<TGet> OptionalGet() const;
 };
+
+template <>
+std::optional<bool> XValue::OptionalGet<bool>() const;
+
+template <>
+std::optional<double> XValue::OptionalGet<double>() const;
+
+template <>
+std::optional<int64_t> XValue::OptionalGet<int64_t>() const;
+
+template <>
+std::optional<uint64_t> XValue::OptionalGet<uint64_t>() const;
+
+template <>
+std::optional<int32_t> XValue::OptionalGet<int32_t>() const;
+
+template <>
+std::optional<uint32_t> XValue::OptionalGet<uint32_t>() const;
+
+template <>
+std::optional<int16_t> XValue::OptionalGet<int16_t>() const;
+
+template <>
+std::optional<uint16_t> XValue::OptionalGet<uint16_t>() const;
+
+template <>
+std::optional<std::string_view> XValue::OptionalGet<std::string_view>() const;
+
+template <>
+std::optional<std::string> XValue::OptionalGet<std::string>() const;
 
 } // namespace xsdk

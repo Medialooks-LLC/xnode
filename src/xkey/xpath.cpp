@@ -1,6 +1,6 @@
 #include "xkey/xpath.h"
 
-#include <iostream> 
+#include <iostream>
 #include <sstream>
 
 namespace xsdk {
@@ -53,7 +53,7 @@ std::string XPath::to_string() const
 /*static*/ std::pair<XKeyVariant, std::string_view> XPath::_split_key(std::string_view _str)
 {
     assert(!_str.empty());
-    auto pos_dots  = _str.find(kKeyDelimiter);
+    auto pos_dots = _str.find(kKeyDelimiter);
     if (pos_dots == 0)
         return _split_key(_str.substr(kKeyDelimiter.length())); // Fix for do not have empty keys
 
@@ -62,9 +62,9 @@ std::string XPath::to_string() const
     if (pos_brace == 0 && _str.length() > kKeyBraceOpen.length()) {
         // for opened brace the end of key is ']' - for allow to have keys with dots e.g. [allow::have::dots]
         auto pos_end = _str.find(kKeyBraceClose);
-        
+
         // check for index e.g. [123]
-        if (!kStringKayInBraces || std::isdigit(_str[1])) {
+        if (!kStringKeyInBraces || std::isdigit(_str[1])) {
             // Do not expect index more than max_int
             size_t key_idx = (size_t)std::atoi(_str.data() + 1);
             if (pos_end == std::string_view::npos || pos_end + kKeyBraceClose.length() >= _str.length())
@@ -83,15 +83,14 @@ std::string XPath::to_string() const
         return {key_str, _str.substr(pos_end + kKeyBraceClose.length())};
     }
 
-    if (pos_brace < pos_dots)
-    {
+    if (pos_brace < pos_dots) {
         if (pos_brace + kKeyBraceOpen.length() >= _str.length())
             return {_str, {}};
 
-         // Next part have to be started from '[' 
-         return {_str.substr(0, pos_brace), _str.substr(pos_brace)};
+        // Next part have to be started from '['
+        return {_str.substr(0, pos_brace), _str.substr(pos_brace)};
     }
-    
+
     if (pos_dots == std::string_view::npos || pos_dots + kKeyDelimiter.length() >= _str.length())
         return {_str.substr(0, pos_dots), {}};
 

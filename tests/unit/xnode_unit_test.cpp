@@ -3,7 +3,7 @@
 #include "xnode_functions.h"
 #include "xnode_json.h"
 
-// For XNode::counter()
+// For XNode::Counter()
 #include "../src/xnode/impl/xnode_impl.h"
 
 #include <gtest/gtest.h>
@@ -411,5 +411,121 @@ TEST(xnode_utests, emplace_to_array_w_convert)
     EXPECT_EQ(array_node->At(2), "next_value") << "wrong array[2] value";
 }
 
+TEST(xnode_utests, node_get)
+{
+    auto root_map   = xnode::Create(INode::NodeType::Map);
+    auto node_empty = xnode::NodeGet(root_map, "not_create");
+    EXPECT_FALSE(node_empty) << "xnode::NodeGet() create node for empty type";
+
+    auto node_map = xnode::NodeGet(root_map, "create_map", INode::NodeType::Map);
+    EXPECT_TRUE(node_map) << "xnode::NodeGet(INode::NodeType::Map) node not created";
+    EXPECT_EQ(node_map->Type(), INode::NodeType::Map) << "xnode::NodeGet(INode::NodeType::Map) wrong type";
+
+    auto node_arr = xnode::NodeGet(root_map, "create_array", INode::NodeType::Array);
+    EXPECT_TRUE(node_arr) << "xnode::NodeGet(INode::NodeType::Array) node not created";
+    EXPECT_EQ(node_arr->Type(), INode::NodeType::Array) << "xnode::NodeGet(INode::NodeType::Array) wrong type";
+}
+
+TEST(xnode_utests, node_combine_no_update)
+{
+    auto base_map = xnode::CreateMap({{"unchnaged", 99}, {"updated", false}});
+
+    auto check_no_update = xnode::NodeCombine(base_map, {}, false);
+    EXPECT_EQ(xnode::ToJson(base_map), xnode::ToJson(check_no_update)) << "NodeCombine() wrong with empty update";
+    auto check_no_update_ow = xnode::NodeCombine(base_map, {}, true);
+    EXPECT_EQ(xnode::ToJson(base_map), xnode::ToJson(check_no_update_ow)) << "NodeCombine() wrong with empty update";
+}
+
+TEST(xnode_utests, node_combine_no_base)
+{
+    auto base_map = xnode::CreateMap({{"unchnaged", 99}, {"updated", false}});
+
+    auto check_no_base = xnode::NodeCombine(nullptr, {{"new_val", 1}, {"updated", true}}, false);
+    ASSERT_TRUE(check_no_base) << "NodeCombine() wrong with no base";
+    EXPECT_EQ(check_no_base->At("new_val").Uint32(), 1);
+    EXPECT_EQ(check_no_base->At("updated").Bool(), true);
+
+    auto check_no_base_ow = xnode::NodeCombine(nullptr, {{"new_val", 1}, {"updated", true}}, false);
+    ASSERT_TRUE(check_no_base_ow) << "NodeCombine() wrong with no base";
+    EXPECT_EQ(check_no_base_ow->At("updated").Bool(), true);
+    EXPECT_EQ(check_no_base_ow->At("updated").Bool(), true);
+}
+
+TEST(xnode_utests, node_combine)
+{
+    auto base_map = xnode::CreateMap({{"unchnaged", 99}, {"updated", false}});
+
+    auto combine = xnode::NodeCombine(base_map, {{"new_val", 1}, {"updated", true}}, false);
+    ASSERT_TRUE(combine) << "NodeCombine() nullptr out";
+    EXPECT_EQ(combine->At("unchnaged").Uint32(), 99);
+    EXPECT_EQ(combine->At("new_val").Uint32(), 1);
+    EXPECT_EQ(combine->At("updated").Bool(true), false);
+
+    auto combine_ow = xnode::NodeCombine(base_map, {{"new_val", 1}, {"updated", true}}, true);
+    ASSERT_TRUE(combine_ow) << "NodeCombine() nullptr out";
+    EXPECT_EQ(combine_ow->At("unchnaged").Uint32(), 99);
+    EXPECT_EQ(combine_ow->At("new_val").Uint32(), 1);
+    EXPECT_EQ(combine_ow->At("updated").Bool(true), true);
+}
+
+TEST(xnode_utests, clone_map_names)
+{
+    auto base_map = xnode::CreateMap({{"unchnaged", 99}, {"updated", false}}, "test_name");
+    EXPECT_EQ(base_map->NameGet(), "test_name");
+
+    auto clone_w_name = xnode::Clone(base_map, true);
+    EXPECT_EQ(base_map->NameGet(), clone_w_name->NameGet());
+
+    auto clone_wo_name = xnode::Clone(base_map, true, {}, "");
+    EXPECT_EQ(clone_wo_name->NameGet(), "");
+
+    auto clone_new_name = xnode::Clone(base_map, true, {}, "new_name");
+    EXPECT_EQ(clone_new_name->NameGet(), "new_name");
+}
+
+TEST(xnode_utests, clone_arr_names)
+{
+    auto base_arr = xnode::CreateArray({"unchnaged", 99, "updated", false}, "test_name");
+    EXPECT_EQ(base_arr->NameGet(), "test_name");
+
+    auto clone_w_name = xnode::Clone(base_arr, true);
+    EXPECT_EQ(base_arr->NameGet(), clone_w_name->NameGet());
+
+    auto clone_wo_name = xnode::Clone(base_arr, true, {}, "");
+    EXPECT_EQ(clone_wo_name->NameGet(), "");
+
+    auto clone_new_name = xnode::Clone(base_arr, true, {}, "new_name");
+    EXPECT_EQ(clone_new_name->NameGet(), "new_name");
+}
+
+TEST(xnode_utests, clone_empty_map_names)
+{
+    auto base_map = xnode::CreateMap({}, "test_name");
+    EXPECT_EQ(base_map->NameGet(), "test_name");
+
+    auto clone_w_name = xnode::Clone(base_map, true);
+    EXPECT_EQ(base_map->NameGet(), clone_w_name->NameGet());
+
+    auto clone_wo_name = xnode::Clone(base_map, true, {}, "");
+    EXPECT_EQ(clone_wo_name->NameGet(), "");
+
+    auto clone_new_name = xnode::Clone(base_map, true, {}, "new_name");
+    EXPECT_EQ(clone_new_name->NameGet(), "new_name");
+}
+
+TEST(xnode_utests, clone_empty_arr_names)
+{
+    auto base_arr = xnode::CreateArray({}, "test_name");
+    EXPECT_EQ(base_arr->NameGet(), "test_name");
+
+    auto clone_w_name = xnode::Clone(base_arr, true);
+    EXPECT_EQ(base_arr->NameGet(), clone_w_name->NameGet());
+
+    auto clone_wo_name = xnode::Clone(base_arr, true, {}, "");
+    EXPECT_EQ(clone_wo_name->NameGet(), "");
+
+    auto clone_new_name = xnode::Clone(base_arr, true, {}, "new_name");
+    EXPECT_EQ(clone_new_name->NameGet(), "new_name");
+}
 
 // NOLINTEND(*)
