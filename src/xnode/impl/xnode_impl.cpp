@@ -102,7 +102,7 @@ std::pair<bool, INode::SPtr> XNode::ParentSet(INode::SPtr                     _p
         if (_parent->Type() == NodeType::Map)
             parent_private->PrivateSet(NameGet(), NodeThis_());
         else
-            parent_private->PrivateInsert(kIdxEnd, NodeThis_());
+            parent_private->PrivateInsert(xnode::kIdxEnd, NodeThis_());
     }
 
     return {true, parent_prev};
@@ -260,12 +260,13 @@ bool XNode::ForPatch(std::function<bool(const XKey&, const XValueRT&)>&& _pf_on_
 }
 
 // Method for take, Erase, change items via callback
-bool XNode::ForEach(std::function<OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item, const XKey& _from_key /*= XKey()*/)
+bool XNode::ForEach(std::function<xnode::OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item,
+                    const XKey&                                               _from_key /*= XKey()*/)
 {
     std::vector<INode::SPtr>                                 vec_removed_nodes;
     std::vector<std::pair<INode::SPtr, IContainer::KeyType>> vec_set_nodes;
 
-    std::function<OnEachRes(const IContainer::KeyType&, IContainer::MappedType&)> pf_on_item;
+    std::function<xnode::OnEachRes(const IContainer::KeyType&, IContainer::MappedType&)> pf_on_item;
     if (_pf_on_item) {
         pf_on_item = [&](const IContainer::KeyType& _key, IContainer::MappedType& _val) -> auto {
             auto prev_val = _val;
@@ -273,7 +274,7 @@ bool XNode::ForEach(std::function<OnEachRes(const XKey&, XValueRT&)>&& _pf_on_it
             auto cb_res   = _pf_on_item(key, _val);
 
             // Detect nodes changes
-            if (cb_res == OnEachRes::Erase || cb_res == OnEachRes::EraseStop) {
+            if (cb_res == xnode::OnEachRes::Erase || cb_res == xnode::OnEachRes::EraseStop) {
                 auto node_remove_p = prev_val.QueryPtr<INode>();
                 if (node_remove_p)
                     vec_removed_nodes.emplace_back(std::move(node_remove_p));
@@ -401,7 +402,7 @@ XValueRT XNode::Append(const XKey& _key, std::string_view _append_str)
             [&](const auto& key, XValueRT& value) {
                 appended = XValue(value.String() + std::string(_append_str));
                 value    = appended;
-                return OnEachRes::Stop;
+                return xnode::OnEachRes::Stop;
             },
             ContainerKey_(_key, true),
             OnChangePF_())) {
@@ -429,7 +430,7 @@ XValueRT XNode::Increment(const XKey& _key, const XValue& _increment_val)
                     appended = value.Int64() + _increment_val.Int64();
 
                 value = appended;
-                return OnEachRes::Stop;
+                return xnode::OnEachRes::Stop;
             },
             ContainerKey_(_key, true),
             OnChangePF_())) {
@@ -459,7 +460,7 @@ std::pair<bool, XValueRT> XNode::CompareExchange(const XKey& _key, const XValue&
             else
                 value_other.emplace(value);
 
-            return OnEachRes::Stop;
+            return xnode::OnEachRes::Stop;
         },
         key_for_exchange);
 
@@ -497,15 +498,15 @@ std::vector<std::pair<XKey, XValueRT>> XNode::BulkGet(const std::vector<XKey>& _
 std::vector<std::pair<XKey, XValueRT>> XNode::BulkGet(const std::vector<XKey>& _keys) { return BulkGet_(false, _keys); }
 
 std::vector<std::pair<XKey, XValueRT>> XNode::BulkGetAll(
-    std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
-    const XKey&                                              _key_begin) const
+    std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
+    const XKey&                                                     _key_begin) const
 {
     return BulkGet_(true, _key_begin, std::move(_pf_on_item));
 }
 
 std::vector<std::pair<XKey, XValueRT>> XNode::BulkGetAll(
-    std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
-    const XKey&                                              _key_begin)
+    std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
+    const XKey&                                                     _key_begin)
 {
     return BulkGet_(false, _key_begin, std::move(_pf_on_item));
 }
@@ -668,7 +669,7 @@ std::pair<size_t, XKey> XNode::BulkInsert(XKey _insert_pos, std::vector<XValue>&
     std::vector<INode::SPtr> vec_inserted_nodes;
 
     size_t inserted   = 0;
-    size_t insert_pos = _insert_pos.IndexGet().value_or(kIdxEnd);
+    size_t insert_pos = _insert_pos.IndexGet().value_or(xnode::kIdxEnd);
 
     IContainer::EmplaceRes EmplaceRes;
     auto                   it = _values.begin();
@@ -697,7 +698,7 @@ std::pair<size_t, XKey> XNode::BulkInsert(XKey _insert_pos, std::vector<XValue>&
         if (node_insert_p)
             vec_inserted_nodes.emplace_back(std::move(node_insert_p));
 
-        if (insert_pos != kIdxEnd && insert_pos != kIdxLast)
+        if (insert_pos != xnode::kIdxEnd && insert_pos != xnode::kIdxLast)
             ++insert_pos;
 
         ++inserted;
@@ -807,9 +808,9 @@ XKey XNode::PrivateErase(const INode::SPtr& _node_p)
     ContainerGet_()->ForEach([&](const auto& key, auto& val) {
         if (val == _node_p) {
             erased_key = NodeKey_(key);
-            return OnEachRes::EraseStop;
+            return xnode::OnEachRes::EraseStop;
         }
-        return OnEachRes::Next;
+        return xnode::OnEachRes::Next;
     });
 
     return erased_key;
@@ -957,9 +958,9 @@ std::vector<std::pair<XKey, XValueRT>> XNode::BulkGet_(bool _read_only, const st
 }
 
 std::vector<std::pair<XKey, XValueRT>> XNode::BulkGet_(
-    bool                                                     _read_only,
-    const XKey&                                              _key_begin,
-    std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item) const
+    bool                                                            _read_only,
+    const XKey&                                                     _key_begin,
+    std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item) const
 {
     std::shared_lock lck(container_rw_);
 
@@ -967,12 +968,12 @@ std::vector<std::pair<XKey, XValueRT>> XNode::BulkGet_(
     ContainerGet_()->ForEach(
         [&](const auto& key, const auto& value) {
             XValueRT value_take = _read_only ? MakeConst_(value) : value;
-            auto     cb_res     = _pf_on_item ? _pf_on_item(NodeKey_(key), value_take) : OnCopyRes::Take;
+            auto     cb_res     = _pf_on_item ? _pf_on_item(NodeKey_(key), value_take) : xnode::OnCopyRes::Take;
 
-            if (cb_res == OnCopyRes::TakeStop || cb_res == OnCopyRes::Take)
+            if (cb_res == xnode::OnCopyRes::TakeStop || cb_res == xnode::OnCopyRes::Take)
                 values.emplace_back(NodeKey_(key), value_take);
 
-            return (cb_res == OnCopyRes::TakeStop || cb_res == OnCopyRes::Stop) ? true : false;
+            return (cb_res == xnode::OnCopyRes::TakeStop || cb_res == xnode::OnCopyRes::Stop) ? true : false;
         },
         _key_begin ? std::optional<IContainer::KeyType>(ContainerKey_(_key_begin, true)) : std::nullopt);
 

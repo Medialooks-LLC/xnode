@@ -11,25 +11,25 @@ INode::SPtr xnode::NodeGet(const INode::SPtr&             _node_this,
 {
     bool        create_nodes = _node_type.has_value();
     INode::SPtr node_dest    = _node_this;
-    while (node_dest && _path.size() > 1) {
-        auto key_node = _path.pop_front();
+    while (node_dest && _path.Size() > 1) {
+        auto key_node = _path.PopFront();
         node_dest     = xnode::NodeGetByKey(node_dest,
                                         key_node,
-                                        create_nodes ? XKeyToNodeType::Match(_path.front()) : std::nullopt,
+                                        create_nodes ? XKeyToNodeType::Match(_path.At(0)) : std::nullopt,
                                         false);
     }
 
-    if (!node_dest || _path.empty())
+    if (!node_dest || _path.Empty())
         return node_dest;
 
-    return xnode::NodeGetByKey(node_dest, _path.back(), _node_type, _convert_to_type);
+    return xnode::NodeGetByKey(node_dest, _path.Back(), _node_type, _convert_to_type);
 }
 
 INode::SPtrC xnode::NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path)
 {
     INode::SPtrC node_dest = _node_this;
-    while (node_dest && !_path.empty())
-        node_dest = node_dest->At(_path.pop_front()).QueryPtrC<INode>();
+    while (node_dest && !_path.Empty())
+        node_dest = node_dest->At(_path.PopFront()).QueryPtrC<INode>();
 
     return node_dest;
 }
@@ -56,8 +56,8 @@ std::optional<size_t> xnode::NodeSize(const INode::SPtrC& _node_this, XPath&& _p
 XValueRT xnode::At(const INode::SPtr& _node_this, XPath&& _path)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto        key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_path));
 
     if (!node_dest)
@@ -69,8 +69,8 @@ XValueRT xnode::At(const INode::SPtr& _node_this, XPath&& _path)
 XValueRT xnode::At(const INode::SPtrC& _node_this, XPath&& _path)
 {
     INode::SPtrC node_dest = _node_this;
-    auto         key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto         key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeConstGet(_node_this, std::move(_path));
 
     if (!node_dest)
@@ -82,8 +82,8 @@ XValueRT xnode::At(const INode::SPtrC& _node_this, XPath&& _path)
 std::pair<bool, XValueRT> xnode::Set(const INode::SPtr& _node_this, XPath&& _path, XValue&& _val)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto        key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_path), XKeyToNodeType::Match(key_dest));
 
     if (!node_dest)
@@ -94,8 +94,8 @@ std::pair<bool, XValueRT> xnode::Set(const INode::SPtr& _node_this, XPath&& _pat
 INode::InsertRes xnode::Insert(const INode::SPtr& _node_this, XPath&& _path, XValue&& _val)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto        key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_path), XKeyToNodeType::Match(key_dest));
 
     if (!node_dest)
@@ -107,8 +107,8 @@ INode::InsertRes xnode::Insert(const INode::SPtr& _node_this, XPath&& _path, XVa
 XValueRT xnode::Erase(const INode::SPtr& _node_this, XPath&& _path)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto        key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_path));
 
     if (!node_dest)
@@ -120,8 +120,8 @@ XValueRT xnode::Erase(const INode::SPtr& _node_this, XPath&& _path)
 XValueRT xnode::Increment(const INode::SPtr& _node_this, XPath&& _path, XValue&& _val)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _path.pop_back();
-    if (!_path.empty())
+    auto        key_dest  = _path.PopBack();
+    if (!_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_path));
 
     if (!node_dest)
@@ -133,8 +133,8 @@ XValueRT xnode::Increment(const INode::SPtr& _node_this, XPath&& _path, XValue&&
 size_t xnode::EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path, XValue&& _val)
 {
     INode::SPtr node_dest = _node_this;
-    auto        key_dest  = _array_path.pop_back();
-    if (!_array_path.empty())
+    auto        key_dest  = _array_path.PopBack();
+    if (!_array_path.Empty())
         node_dest = xnode::NodeGet(_node_this, std::move(_array_path), XKeyToNodeType::Match(key_dest));
 
     if (!node_dest)

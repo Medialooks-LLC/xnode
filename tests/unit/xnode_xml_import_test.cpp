@@ -76,7 +76,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_simple_with_attr)
     auto val = node->At("-a");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("b", val.String());
-    val = node->At(kXMLValueName);
+    val = node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("abc", val.String());
 }
@@ -96,7 +96,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_simple_with_attr2)
     auto val = node->At("-root");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("def", val.String());
-    val = node->At(kXMLValueName);
+    val = node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("abc", val.String());
 }
@@ -191,7 +191,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_array_node_with_attrs)
     EXPECT_FALSE(val.IsEmpty());
     if (val) {
         auto arr_node = val.QueryPtr<INode>();
-        val           = arr_node->At(kXMLValueName);
+        val           = arr_node->At(xnode::kXMLValueName);
         EXPECT_EQ(1, val.Int64());
         val = arr_node->At("-name");
         EXPECT_EQ("one", val.String());
@@ -200,7 +200,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_array_node_with_attrs)
     EXPECT_FALSE(val.IsEmpty());
     if (val) {
         auto arr_node = val.QueryPtr<INode>();
-        val           = arr_node->At(kXMLValueName);
+        val           = arr_node->At(xnode::kXMLValueName);
         EXPECT_EQ(2, val.Int64());
         val = arr_node->At("-value");
         EXPECT_EQ(33, val.Int64());
@@ -209,7 +209,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_array_node_with_attrs)
     EXPECT_FALSE(val.IsEmpty());
     if (val) {
         auto arr_node = val.QueryPtr<INode>();
-        val           = arr_node->At(kXMLValueName);
+        val           = arr_node->At(xnode::kXMLValueName);
         EXPECT_EQ(3, val.Int64());
         val = arr_node->At("-islast");
         EXPECT_TRUE(val.Bool());
@@ -350,7 +350,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_nested_node_in_text)
     auto val = node->At("-a");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("b", val.String());
-    val = node->At(kXMLValueName);
+    val = node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     auto arr_node = val.QueryPtr<INode>();
     EXPECT_EQ(INode::NodeType::Array, arr_node->Type());
@@ -387,7 +387,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_nested_node_in_text2)
     val = node->At("inn"); // "inn": { "#text": [ "abc", {"-d" : "e"}, "def" ] }
     EXPECT_FALSE(val.IsEmpty());
     auto inn_node = val.QueryPtr<INode>();
-    val           = inn_node->At(kXMLValueName);
+    val           = inn_node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     auto arr_node = val.QueryPtr<INode>();
     EXPECT_EQ(INode::NodeType::Array, arr_node->Type());
@@ -421,7 +421,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_nested_node_in_text3)
     auto val = node->At("-a");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("b", val.String());
-    val = node->At(kXMLValueName); // [ "some ", {"i" : "italic text"}, " and ", {"b" : "bold text"}, "." ]
+    val = node->At(xnode::kXMLValueName); // [ "some ", {"i" : "italic text"}, " and ", {"b" : "bold text"}, "." ]
     EXPECT_FALSE(val.IsEmpty());
     auto arr_node = val.QueryPtr<INode>();
     EXPECT_EQ(INode::NodeType::Array, arr_node->Type());
@@ -606,7 +606,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_nested_nodes3)
     val         = a_node->At("-x");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ(1, val.Int64());
-    val = a_node->At(kXMLValueName);
+    val = a_node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ(2, val.Int64());
 }
@@ -624,7 +624,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_node_with_unicode)
 #endif
     EXPECT_TRUE(node->IsName("root"));
     EXPECT_EQ(INode::NodeType::Map, node->Type());
-    auto val = node->At(kXMLValueName);
+    auto val = node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("alphabet алфавит 字母 ← ⇐🙂", val.String());
     val = node->At("-attr");
@@ -726,7 +726,7 @@ TEST(xnode_xml_import_unit_tests, check_valid_node_with_empty_tags3)
     auto val = node->At("c");
     EXPECT_FALSE(val.IsEmpty());
     auto inn_node = val.QueryPtr<INode>();
-    val           = inn_node->At(kXMLValueName);
+    val           = inn_node->At(xnode::kXMLValueName);
     EXPECT_FALSE(val.IsEmpty());
     auto c_node = val.QueryPtr<INode>();
     EXPECT_TRUE(c_node);

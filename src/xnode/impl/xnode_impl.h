@@ -126,8 +126,8 @@ public:
                           const XKey&                                         _from_key) const override;
 
     // Method for take, Erase, change items via callback
-    virtual bool ForEach(std::function<OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item,
-                         const XKey&                                        _from_key) override;
+    virtual bool ForEach(std::function<xnode::OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item,
+                         const XKey&                                               _from_key) override;
 
     // Return {success, current value}
     virtual std::pair<bool, XValueRT> Set(const XKey& _key, XValue&& _val) override;
@@ -153,11 +153,11 @@ public:
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) const override;
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) override;
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGetAll(
-        std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
-        const XKey&                                              _key_begin) const override;
+        std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
+        const XKey&                                                     _key_begin) const override;
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGetAll(
-        std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
-        const XKey&                                              _key_begin) override;
+        std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item,
+        const XKey&                                                     _key_begin) override;
 
     // Return {number of succeeded, vector of failed {key, mapped} }
     // virtual std::pair<size_t, key_value_vec> BulkSet(const key_value_vec& _values) override { return {};}
@@ -215,9 +215,9 @@ private:
     // Bulk helpers
     std::vector<std::pair<XKey, XValueRT>> BulkGet_(bool _read_only, const std::vector<XKey>& _keys) const;
     std::vector<std::pair<XKey, XValueRT>> BulkGet_(
-        bool                                                     _read_only,
-        const XKey&                                              _key_begin,
-        std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item) const;
+        bool                                                            _read_only,
+        const XKey&                                                     _key_begin,
+        std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item) const;
 };
 
 } // namespace xsdk::impl

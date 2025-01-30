@@ -181,12 +181,12 @@ void XNodeSaxHandler::StartArray_(std::string_view _node_name)
             auto child = parent->At(name);
             parent->Erase(name);
             if (_node_name.compare(name) == 0) {
-                auto success = node_arr->Insert(kIdxEnd, std::move(child)).succeeded;
+                auto success = node_arr->Insert(xnode::kIdxEnd, std::move(child)).succeeded;
                 assert(success);
             }
             else {
                 auto child_wrapper = WrapToNode_(name, child);
-                auto success       = node_arr->Insert(kIdxEnd, std::move(child_wrapper)).succeeded;
+                auto success       = node_arr->Insert(xnode::kIdxEnd, std::move(child_wrapper)).succeeded;
                 assert(success);
             }
         }
@@ -227,11 +227,11 @@ void XNodeSaxHandler::CollapseArrayNodes_(const INode::SPtr& _node)
                 to_update.push_back(_key);
             }
         }
-        return OnEachRes::Next;
+        return xnode::OnEachRes::Next;
     });
     for (auto key : to_update) {
         auto child   = _node->At(key).QueryPtr<INode>();
-        auto success = _node->Set(key, child->At(kIdxBegin)).first;
+        auto success = _node->Set(key, child->At(xnode::kIdxBegin)).first;
         assert(success);
     }
 }
@@ -243,9 +243,9 @@ bool XNodeSaxHandler::HasNestedNodes_(const INode::SPtr& _node)
         _node->ForEach([&has_nested_nodes](const XKey& key, XValueRT& value) {
             if (value.IsObject()) {
                 has_nested_nodes = true;
-                return OnEachRes::Stop;
+                return xnode::OnEachRes::Stop;
             }
-            return OnEachRes::Next;
+            return xnode::OnEachRes::Next;
         });
     }
     return has_nested_nodes;
@@ -259,11 +259,11 @@ void XNodeSaxHandler::ConvertToArray_(const INode::SPtr& _node)
         auto need_wrap_array = child && child->Type() == INode::NodeType::Array;
         if (need_wrap_array) {
             auto child_wrapper = WrapToNode_(child);
-            auto success       = node_arr->Insert(kIdxEnd, std::move(child_wrapper)).succeeded;
+            auto success       = node_arr->Insert(xnode::kIdxEnd, std::move(child_wrapper)).succeeded;
             assert(success);
         }
         else {
-            auto success = node_arr->Insert(kIdxEnd, std::move(_node->At(element_name))).succeeded;
+            auto success = node_arr->Insert(xnode::kIdxEnd, std::move(_node->At(element_name))).succeeded;
             assert(success);
         }
         _node->Erase(element_name);

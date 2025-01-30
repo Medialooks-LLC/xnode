@@ -50,9 +50,9 @@ public:
 
     // Return 'false' if empty or key not found
     virtual bool ForEach( // NOLINT(readability-function-cognitive-complexity)
-        std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
-        const std::optional<KeyType>&                           _from_key,
-        const OnChangePF&                                       _pf_on_change) override;
+        std::function<xnode::OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
+        const std::optional<KeyType>&                                  _from_key,
+        const OnChangePF&                                              _pf_on_change) override;
 
     virtual std::pair<bool, MappedType> Set(const KeyType&    _key,
                                             const MappedType& _val,

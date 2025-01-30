@@ -7,7 +7,7 @@
 #include <string_view>
 #include <variant>
 
-namespace xsdk {
+namespace xsdk::xnode {
 
 // For IContainer INode callback res (?)
 /**
@@ -75,4 +75,4 @@ static constexpr size_t kExportIndentCount = 4;   ///< Default number of spaces 
 static constexpr char   kExportIndentChar  = ' '; ///< Default character used for indentation when exporting data.
 ///@}
 
-} // namespace xsdk
+} // namespace xsdk::xnode

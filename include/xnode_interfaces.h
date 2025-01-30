@@ -250,8 +250,8 @@ public:
      * @note                The function manages changes in the nodes connected to the keys
      *                      and handles their removal or addition accordingly.
      */
-    virtual bool ForEach(std::function<OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item,
-                         const XKey&                                        _from_key = XKey()) = 0;
+    virtual bool ForEach(std::function<xnode::OnEachRes(const XKey&, XValueRT&)>&& _pf_on_item,
+                         const XKey&                                               _from_key = XKey()) = 0;
 
     // Return {success, previous value}
     /**
@@ -386,8 +386,8 @@ public:
      * @return A vector of pairs: {key, value} for using them read only.
      */
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGetAll(
-        std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item = nullptr,
-        const XKey&                                              _key_begin  = XKey()) const = 0;
+        std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item = nullptr,
+        const XKey&                                                     _key_begin  = XKey()) const = 0;
     /**
      * @brief Bulk retrieves all values in the container.
      * @details Return a vector of {key, value} of taken elements, the result of callback decides whether or not to take
@@ -397,8 +397,8 @@ public:
      * @return A vector of pairs: {key, value}.
      */
     virtual std::vector<std::pair<XKey, XValueRT>> BulkGetAll(
-        std::function<OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item = nullptr,
-        const XKey&                                              _key_begin  = XKey()) = 0;
+        std::function<xnode::OnCopyRes(const XKey&, const XValueRT&)>&& _pf_on_item = nullptr,
+        const XKey&                                                     _key_begin  = XKey()) = 0;
 
     /**
      * @brief Sets multiple new children for the node in one call.

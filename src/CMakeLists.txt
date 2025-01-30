@@ -13,10 +13,21 @@ include_directories(
         ../include
 )
 
-add_library(${PROJECT_NAME}
-    STATIC
-    ${FILES}
-)
+if(DYNAMIC_BUILD)
+    add_library(${PROJECT_NAME}
+        SHARED
+        ${FILES}
+    )
+else()
+    add_library(${PROJECT_NAME}
+        STATIC
+        ${FILES}
+    )
+endif()
+
+if(WIN32)
+    set_target_properties(xnode PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
                       PUBLIC

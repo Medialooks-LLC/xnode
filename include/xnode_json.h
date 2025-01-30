@@ -23,8 +23,8 @@ namespace xsdk::xnode {
  * @note A zero error position means that the import from JSON was successful.
  */
 std::pair<INode::SPtr, size_t> FromJson(const std::string_view _json,
-                                        const std::string_view _name               = {},
-                                        const uint64_t         _uid                = 0);
+                                        const std::string_view _name = {},
+                                        const uint64_t         _uid  = 0);
 
 /**
  * @brief Enum class representing different JSON format options.
@@ -32,8 +32,8 @@ std::pair<INode::SPtr, size_t> FromJson(const std::string_view _json,
  */
 enum class JsonFormat {
     /// Pretty JSON format with indentation for readability (default)
-    kPretty  = 0, 
-    
+    kPretty = 0,
+
     /// One-line JSON format.
     kOneLine = 1,
 

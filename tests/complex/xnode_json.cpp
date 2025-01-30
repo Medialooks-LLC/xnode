@@ -23,14 +23,14 @@ TEST(xnode_tests_json, conversion_test)
     xnode::Set(node_map_sp, "uint_val", 10U); // todo: ULL for gcc
     auto node_array = xnode::NodeGet(node_map_sp, "node1::array", INode::NodeType::Array);
     ASSERT_TRUE(node_array);
-    node_array->Insert(kIdxEnd, 123);
-    node_array->Insert(kIdxEnd, "string");
-    node_array->Insert(kIdxEnd, 123.456);
-    node_array->Insert(kIdxEnd, nullptr);
-    node_array->Insert(kIdxEnd, true);
-    node_array->Insert(kIdxEnd, std::numeric_limits<uint64_t>::max()); // CHECK !!!
-    node_array->Insert(kIdxEnd, std::numeric_limits<int64_t>::min());
-    node_array->Insert(kIdxBegin, "first");
+    node_array->Insert(xnode::kIdxEnd, 123);
+    node_array->Insert(xnode::kIdxEnd, "string");
+    node_array->Insert(xnode::kIdxEnd, 123.456);
+    node_array->Insert(xnode::kIdxEnd, nullptr);
+    node_array->Insert(xnode::kIdxEnd, true);
+    node_array->Insert(xnode::kIdxEnd, std::numeric_limits<uint64_t>::max()); // CHECK !!!
+    node_array->Insert(xnode::kIdxEnd, std::numeric_limits<int64_t>::min());
+    node_array->Insert(xnode::kIdxBegin, "first");
     node_array->Insert(1, "second");
 
     auto str = xnode::ToJson(node_map_sp, nullptr, xnode::JsonFormat::kOneLineArrays);

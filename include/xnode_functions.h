@@ -19,6 +19,18 @@ namespace xsdk::xnode {
  * @return std::shared_ptr to the newly created XNode
  */
 INode::SPtr Create(INode::NodeType _type, std::string_view _name = {}, uint64_t _uid = 0);
+
+/**
+ * @brief Check existed node for specified type, if not suitable, creates an XNode of the given type
+ *
+ * @param _try_node Node for check 
+ * @param _type Node type to create
+ * @param _name Optional name for the node
+ * @param _uid Optional unique identifier for the node
+ *
+ * @return std::shared_ptr to the newly created XNode
+ */
+INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name = {});
 /**
  * @brief Creates an XNode array
  *
@@ -322,7 +334,8 @@ std::vector<std::pair<XKey, XValueRT>> NodesConstList(const INode::SPtrC& _node_
  * @details The function navigates through the given XPath and returns all nodes at the path.
  * @param _node_this INode instance to start traversing from.
  * @param _path The XPath to navigate through.
- * @param _child_nodes_unwrap Optionally 'unwrap' nodes like  { "name" : { node } } into { node } with corresponding name. Applies to array nodes only.
+ * @param _child_nodes_unwrap Optionally 'unwrap' nodes like  { "name" : { node } } into { node } with corresponding
+ * name. Applies to array nodes only.
  * @param _on_node_pf optional callback: return true for include into list, false for skip, std::nullopt for stop
  * @return A vector containing all nodes at the XPath.
  */
@@ -349,9 +362,27 @@ std::vector<INode::SPtrC> ChildNodesConstGet(
     std::function<std::optional<bool>(const INode::SPtrC& _node, size_t _taken)>&& _on_node_pf         = {});
 
 /**
- * @brief Insert wrapped node into array {"name" : { node }} 
+ * @brief Wrap node into map: {"name" : { node }}
+ * (used for keed nodes names e.g. in arrays)
+ * @param _node_val The original node to be wrapped
+ * @return A pair containing the wrapped value and a boolean indicating if the wrapping was successful.
+ * @note If the wrapping fails, the original node is returned.
+ */
+std::pair<XValue, bool> NodeWrap(XValue&& _node_val);
+
+/**
+ * @brief Unwrap node from map {"name" : { node }}
+ * (used for keed nodes names e.g. in arrays)
+ * @param _node_val The wrapped node to be unwrapped
+ * @return A pair containing the unwrapped value and a boolean indicating if the unwrapping was successful.
+ * @note If the unwrapping fails, the original wrapped node is returned.
+ */
+std::pair<XValue, bool> NodeUnwrap(XValue&& _node_val);
+
+/**
+ * @brief Insert wrapped node into array {"name" : { node }}
  * (used for keed nodes names in array)
- * @param _node_array target INode instance 
+ * @param _node_array target INode instance
  * @param _val Value to set the target node to (e.g. node for wrap)
  * @param _insert_at index in array (default is add to the end of array)
  * @return The result of the insertion operation. See result structure here: @ref InsertRes.
@@ -372,6 +403,20 @@ XValue ArrayNodesWrap(XValue&& _array_val);
  * @return Updated node or orignal one if no chnages
  */
 XValue ArrayNodesUnwrap(XValue&& _array_val);
+
+/**
+ * @brief Convert an XKey to XValue.
+ * @param _key The XKey to convert.
+ * @return The XValue corresponding to _key.
+ * @note After conversion, the value will be of type size_t or string, or will be empty.
+ */
+XValue ValueFromKey(const XKey& _key);
+/**
+ * @brief Convert an XValue to XKey.
+ * @param _value The XValue to convert.
+ * @return The XKey corresponding to _value or empty if the conversion fails.
+ */
+XKey KeyFromValue(const XValue& _value);
 
 } // namespace xsdk::xnode
 

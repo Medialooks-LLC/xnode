@@ -51,9 +51,9 @@ public:
     // Return 'false' if empty or key not found
     // Callback: return: next, Erase, erase_stop, stop (see OnEachRes in xdefines.h)
     //           item could be modified in callback, but modification should be approved via 'on_change' cb
-    virtual bool ForEach(std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_item,
-                         const std::optional<KeyType>&                           _from_key     = std::nullopt,
-                         const OnChangePF&                                       _pf_on_change = nullptr) = 0;
+    virtual bool ForEach(std::function<xnode::OnEachRes(const KeyType&, MappedType&)>&& _pf_on_item,
+                         const std::optional<KeyType>&                                  _from_key     = std::nullopt,
+                         const OnChangePF&                                              _pf_on_change = nullptr) = 0;
     // Return {succcess, previous value}
     virtual std::pair<bool, MappedType> Set(const KeyType&    _key,
                                             MappedType&&      _val,

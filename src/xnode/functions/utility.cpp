@@ -2,6 +2,28 @@
 
 namespace xsdk {
 
+std::pair<XValue, bool> xnode::NodeWrap(XValue&& _node_val)
+{
+    auto node = _node_val.QueryPtrC<INode>();
+    if (node && !node->NameGet().empty())
+        return {XValue {xnode::CreateMap({{node->NameGet(), std::move(_node_val)}})}, true};
+
+    return {std::move(_node_val), false};
+}
+
+std::pair<XValue, bool> xnode::NodeUnwrap(XValue&& _node_val) {
+    
+    auto node = _node_val.QueryPtrC<INode>();
+    if (!node || node->Size() != 1 || node->Type() != INode::NodeType::Map)
+        return {std::move(_node_val), false};
+
+    auto node_unwrap = node->At(0).QueryPtrC<INode>();
+    if (node_unwrap && !node_unwrap->NameGet().empty())
+        return {node->At(0), true};
+
+    return {std::move(_node_val), false};
+}
+
 INode::InsertRes xnode::ArrayInsertWrapped(const INode::SPtr& _node_array, XValue&& _val, const size_t _insert_at)
 {
     if (!_node_array || _node_array->Type() != INode::NodeType::Array)
@@ -66,6 +88,28 @@ XValue xnode::ArrayNodesUnwrap(XValue&& _array_val)
         return updated_node;
 
     return std::move(_array_val);
+}
+
+XValue xnode::ValueFromKey(const XKey& _key)
+{
+    if (_key.Type() == XKey::KeyType::Index)
+        return _key.IndexGet().value();
+
+    if (_key.Type() == XKey::KeyType::String)
+        return _key.StringGet().value();
+
+    return {};
+}
+
+XKey xnode::KeyFromValue(const XValue& _value)
+{
+    if (_value.IsInteger())
+        return (size_t)_value.Uint64();
+
+    if (_value.Type() == XValue::ValueType::kString)
+        return _value.String();
+
+    return {};
 }
 
 std::map<XValueRT, XValueRT> xnode::utility::ParentsCheck(const XValue&                  _root,

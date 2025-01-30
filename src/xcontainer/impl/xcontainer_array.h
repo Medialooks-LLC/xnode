@@ -45,9 +45,9 @@ public:
 
     // Return 'false' if empty or key not found
     virtual bool ForEach( // NOLINT(readability-function-cognitive-complexity)
-        std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
-        const std::optional<KeyType>&                           _from_key     = std::nullopt,
-        const OnChangePF&                                       _pf_on_change = nullptr) override;
+        std::function<xnode::OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
+        const std::optional<KeyType>&                                  _from_key     = std::nullopt,
+        const OnChangePF&                                              _pf_on_change = nullptr) override;
 
     virtual std::optional<MappedType> At(const KeyType& _key) const override;
 
@@ -72,8 +72,8 @@ protected:
 
     auto DeqFind_(const KeyType& _key) const -> auto
     {
-        auto idx = KeyToIndex_(_key).value_or(kIdxEnd);
-        if (idx == kIdxLast) // special pos
+        auto idx = KeyToIndex_(_key).value_or(xnode::kIdxEnd);
+        if (idx == xnode::kIdxLast) // special pos
             idx = values_deq_.size() > 1 ? values_deq_.size() - 1 : 0;
         if (idx < values_deq_.size()) {
             auto it = values_deq_.begin();
@@ -86,10 +86,10 @@ protected:
 
     auto DeqFind_(const KeyType& _key, bool _increase_size) -> auto
     {
-        auto idx = KeyToIndex_(_key).value_or(kIdxEnd);
-        if (idx == kIdxEnd)
+        auto idx = KeyToIndex_(_key).value_or(xnode::kIdxEnd);
+        if (idx == xnode::kIdxEnd)
             return values_deq_.end();
-        if (idx == kIdxLast) // special pos
+        if (idx == xnode::kIdxLast) // special pos
             idx = values_deq_.size() > 1 ? values_deq_.size() - 1 : 0;
 
         while (_increase_size && idx >= values_deq_.size() && idx < values_deq_.size() + max_size_increase)

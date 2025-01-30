@@ -249,13 +249,13 @@ TEST(xnode_tests, path_tests_parse_string)
     for (const auto& path : check_paths) {
 
         auto xpath = XPath(path);
-        EXPECT_EQ(xpath.size(), 4);
-        EXPECT_EQ(xpath.at(0).StringGet().value_or(""), "node");
-        EXPECT_EQ(xpath.at(1).StringGet().value_or(""), "subnode");
-        EXPECT_EQ(xpath.at(2).IndexGet().value_or(0), 12);
-        EXPECT_EQ(xpath.at(3).StringGet().value_or(""), "value");
+        EXPECT_EQ(xpath.Size(), 4);
+        EXPECT_EQ(xpath.At(0).StringGet().value_or(""), "node");
+        EXPECT_EQ(xpath.At(1).StringGet().value_or(""), "subnode");
+        EXPECT_EQ(xpath.At(2).IndexGet().value_or(0), 12);
+        EXPECT_EQ(xpath.At(3).StringGet().value_or(""), "value");
 
-        auto str_path = xpath.to_string();
+        auto str_path = xpath.ToString();
         EXPECT_EQ(str_path, "node::subnode[12]::value");
     }
 }
@@ -271,12 +271,12 @@ TEST(xnode_tests, path_tests_parse_string2)
     for (const auto& path : check_paths) {
 
         auto xpath = XPath(path);
-        EXPECT_EQ(xpath.size(), 3);
-        EXPECT_EQ(xpath.at(0).StringGet().value_or(""), "node");
-        EXPECT_EQ(xpath.at(1).StringGet().value_or(""), "allow::dots");
-        EXPECT_EQ(xpath.at(2).StringGet().value_or(""), "value");
+        EXPECT_EQ(xpath.Size(), 3);
+        EXPECT_EQ(xpath.At(0).StringGet().value_or(""), "node");
+        EXPECT_EQ(xpath.At(1).StringGet().value_or(""), "allow::dots");
+        EXPECT_EQ(xpath.At(2).StringGet().value_or(""), "value");
 
-        auto str_path = xpath.to_string();
+        auto str_path = xpath.ToString();
         EXPECT_EQ(str_path, "node[allow::dots]::value");
     }
 }
@@ -466,7 +466,7 @@ TEST(xnode_tests, node_array_parent_tests)
     EXPECT_EQ(node_arr1_sp->Size(), 0);
 
     // For have non empty array
-    node_arr2_sp->Insert(kIdxEnd, 1234);
+    node_arr2_sp->Insert(xnode::kIdxEnd, 1234);
     EXPECT_EQ(node_arr2_sp->At(1), 1234);
 
     // Insert as constant in same array (should be added)
@@ -570,7 +570,7 @@ TEST(xnode_tests, node_array_parent_set)
     EXPECT_EQ(node_arr1_sp->Size(), 0);
 
     // For have non empty array
-    node_arr2_sp->Insert(kIdxEnd, 1234);
+    node_arr2_sp->Insert(xnode::kIdxEnd, 1234);
     EXPECT_EQ(node_arr2_sp->At(1), 1234);
 
     // Insert as constant in same array (should be added)
@@ -630,7 +630,7 @@ TEST(xnode_tests, node_parents_test_w_clear)
 
     node_map_sp->Set("1234", 99.0);
     node_arr_sp->Insert(0, "value_start");
-    node_arr_sp->Insert(kIdxEnd, "value_end");
+    node_arr_sp->Insert(xnode::kIdxEnd, "value_end");
     std::vector<INode::SPtrC> vec_childs;
 
     size_t test_childs = 23;
@@ -714,7 +714,7 @@ TEST(xnode_tests, node_parents_test_w_clear)
         auto node_p = val.QueryPtrC<INode>();
         if (node_p)
             vec_childs.push_back(node_p);
-        return OnCopyRes::Skip;
+        return xnode::OnCopyRes::Skip;
     });
 
     node_arr_sp2->BulkGetAll([&](const XKey& key, const XValueRT& val) {
@@ -722,7 +722,7 @@ TEST(xnode_tests, node_parents_test_w_clear)
         if (node_p)
             vec_childs.push_back(node_p);
 
-        return OnCopyRes::Skip;
+        return xnode::OnCopyRes::Skip;
     });
 
     EXPECT_EQ(vec_childs.size(), test_childs);
@@ -738,14 +738,14 @@ TEST(xnode_tests, node_parents_test_w_clear)
         if (idx % 2)
             val = XValue(1234);
 
-        return idx++ % 2 ? OnEachRes::Next : OnEachRes::Erase;
+        return idx++ % 2 ? xnode::OnEachRes::Next : xnode::OnEachRes::Erase;
     });
 
     node_arr_sp2->ForEach([&](const auto& key, auto& val) {
         if (idx % 2)
             val = XValue(1234);
 
-        return idx++ % 2 ? OnEachRes::Next : OnEachRes::Erase;
+        return idx++ % 2 ? xnode::OnEachRes::Next : xnode::OnEachRes::Erase;
     });
 
     for (auto child_sp : vec_childs)
@@ -766,9 +766,9 @@ TEST(xnode_tests, array_tests)
     EXPECT_EQ(key.IndexGet().value_or(0), 5);
     EXPECT_EQ(xnode::At(node_map_sp, XPath("node::array", 5)).Int64(), 777);
 
-    EXPECT_EQ(xnode::At(node_map_sp, XPath("node::array", kIdxLast)).Int64(), 999);
-    xnode::Set(node_map_sp, XPath("node::array", kIdxLast), 888);
-    EXPECT_EQ(xnode::At(node_map_sp, XPath("node::array", kIdxLast)).Int64(), 888);
+    EXPECT_EQ(xnode::At(node_map_sp, XPath("node::array", xnode::kIdxLast)).Int64(), 999);
+    xnode::Set(node_map_sp, XPath("node::array", xnode::kIdxLast), 888);
+    EXPECT_EQ(xnode::At(node_map_sp, XPath("node::array", xnode::kIdxLast)).Int64(), 888);
 
     auto str = xnode::ToJson(node_map_sp, nullptr, xnode::JsonFormat::kOneLineArrays);
     std::cout << "ORIGINAL:" << str << std::endl;
@@ -785,10 +785,10 @@ TEST(xnode_tests, map_index_access)
     EXPECT_TRUE(node_map_sp->At("1_second") == node_map_sp->At(1));
     EXPECT_TRUE(node_map_sp->At("2_third") == node_map_sp->At(2));
 
-    EXPECT_TRUE(node_map_sp->At("0_first") == node_map_sp->At(kIdxBegin));
+    EXPECT_TRUE(node_map_sp->At("0_first") == node_map_sp->At(xnode::kIdxBegin));
 
-    auto xval = node_map_sp->At(kIdxLast);
-    EXPECT_TRUE(node_map_sp->At("2_third") == node_map_sp->At(kIdxLast));
+    auto xval = node_map_sp->At(xnode::kIdxLast);
+    EXPECT_TRUE(node_map_sp->At("2_third") == node_map_sp->At(xnode::kIdxLast));
 
     node_map_sp->Set(1, "second_udp");
     EXPECT_EQ(node_map_sp->At("1_second").String(), "second_udp");
@@ -891,7 +891,7 @@ TEST(xnode_tests, erasing_history)
     size_t counter = 0;
     bool   found   = node_map_sp->ForEach([&](const XKey&, XValueRT&) {
         ++counter;
-        return OnEachRes::Next;
+        return xnode::OnEachRes::Next;
     });
     EXPECT_FALSE(found);
     ASSERT_EQ(counter, 0);
@@ -920,7 +920,7 @@ TEST(xnode_tests, erasing_via_each_history)
 
     EXPECT_EQ(node_map_sp->Size(), 3);
 
-    node_map_sp->ForEach([](auto&&...) { return OnEachRes::Erase; });
+    node_map_sp->ForEach([](auto&&...) { return xnode::OnEachRes::Erase; });
 
     EXPECT_TRUE(node_map_sp->Empty());
     EXPECT_EQ(node_map_sp->Size(), 0);
@@ -931,7 +931,7 @@ TEST(xnode_tests, erasing_via_each_history)
     size_t counter = 0;
     bool   found   = node_map_sp->ForEach([&](const XKey&, XValueRT&) {
         ++counter;
-        return OnEachRes::Next;
+        return xnode::OnEachRes::Next;
     });
     EXPECT_FALSE(found);
     EXPECT_EQ(counter, 0);
@@ -1015,9 +1015,9 @@ TEST(xnode_tests, node_parent_circular_set)
         node_map_sp2->ForEach([&](const auto& key, auto& val) {
             if (key == XKey("place_for_node")) {
                 val = XValue(node_map_sp);
-                return OnEachRes::Stop;
+                return xnode::OnEachRes::Stop;
             }
-            return OnEachRes::Next;
+            return xnode::OnEachRes::Next;
         });
 
         // EXPECT_EQ(node_map_sp2->At("place_for_node"), 123);
@@ -1033,7 +1033,7 @@ TEST(xnode_tests, wrapped_tests)
     std::vector<INode::SPtrC> vec_const;
     std::vector<INode::SPtr>  vec_non_cont;
     const size_t              items_count = 16;
-    auto                      node_array = xnode::CreateArray();
+    auto                      node_array  = xnode::CreateArray();
     for (size_t z = 0; z < items_count; ++z) {
         INode::SPtr node_check;
         if (z % 4 == 0)
@@ -1058,12 +1058,12 @@ TEST(xnode_tests, wrapped_tests)
         }
     }
 
-    auto json                  = xnode::ToJson(node_array);
+    auto json = xnode::ToJson(node_array);
     std::cout << json;
     auto node_array_serialized = xnode::FromJson(json).first;
 
-    auto vec_original_get      = xnode::ChildNodesGet(node_array, {}, true);
-    auto vec_serialized_get    = xnode::ChildNodesGet(node_array_serialized, {}, true);
+    auto vec_original_get   = xnode::ChildNodesGet(node_array, {}, true);
+    auto vec_serialized_get = xnode::ChildNodesGet(node_array_serialized, {}, true);
 
     auto cvec_original_get   = xnode::ChildNodesConstGet(node_array, {}, true);
     auto cvec_serialized_get = xnode::ChildNodesConstGet(node_array_serialized, {}, true);
@@ -1081,7 +1081,6 @@ TEST(xnode_tests, wrapped_tests)
                   << std::endl;
         std::cout << "get serialized:" << cvec_serialized_get[z]->NameGet() << ":"
                   << xnode::ToJson(cvec_serialized_get[z]) << std::endl;
-
 
         EXPECT_EQ(vec_const[z]->NameGet(), cvec_original_get[z]->NameGet());
         EXPECT_EQ(vec_const[z]->NameGet(), cvec_serialized_get[z]->NameGet());
@@ -1101,7 +1100,6 @@ TEST(xnode_tests, wrapped_tests)
         EXPECT_EQ(xnode::ToJson(vec_non_cont[z]), xnode::ToJson(vec_original_get[z]));
         EXPECT_EQ(xnode::ToJson(vec_non_cont[z]), xnode::ToJson(vec_serialized_get[z]));
     }
-
 }
 
 // NOLINTEND(*)

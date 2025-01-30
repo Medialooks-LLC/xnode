@@ -5,96 +5,155 @@
 
 namespace xsdk {
 
-XKey XPath::pop_back()
+XKey XPath::PopBack()
 {
-    if (empty())
+    if (path_.empty())
         return empty_key;
-
-    XKey key = std::deque<XKey>::back();
-    std::deque<XKey>::pop_back();
+    XKey key = path_.back();
+    path_.pop_back();
     return key;
 }
 
-XKey XPath::pop_front()
+XKey XPath::PopFront()
 {
-    if (empty())
+    if (path_.empty())
         return empty_key;
-
-    XKey key = std::deque<XKey>::front();
-    std::deque<XKey>::pop_front();
+    XKey key = path_.front();
+    path_.pop_front();
     return key;
 }
 
-std::string XPath::to_string() const
+std::string XPath::ToString() const
 {
     std::ostringstream out;
-    for (const auto& key : *this) {
+    for (const auto& key : path_) {
         if (key.Type() == XKey::KeyType::String) {
             // check for path with dots and braces
             auto key_str = key.StringGet().value();
-            if (key_str.find(kKeyDelimiter) != std::string_view::npos ||
-                key_str.find(kKeyBraceClose) != std::string_view::npos ||
-                key_str.find(kKeyBraceOpen) != std::string_view::npos) {
+            if (key_str.find(xnode::kKeyDelimiter) != std::string_view::npos ||
+                key_str.find(xnode::kKeyBraceClose) != std::string_view::npos ||
+                key_str.find(xnode::kKeyBraceOpen) != std::string_view::npos) {
                 // 2Think:  use ['string'] ?
-                out << kKeyBraceOpen << key_str << kKeyBraceClose;
+                out << xnode::kKeyBraceOpen << key_str << xnode::kKeyBraceClose;
             }
             else {
-                out << (out.tellp() != 0 ? kKeyDelimiter : "") << key_str;
+                out << (out.tellp() != 0 ? xnode::kKeyDelimiter : "") << key_str;
             }
         }
         else if (key.Type() == XKey::KeyType::Index) {
-            out << kKeyBraceOpen << key.IndexGet().value() << kKeyBraceClose;
+            out << xnode::kKeyBraceOpen << key.IndexGet().value() << xnode::kKeyBraceClose;
         }
     }
 
     return std::move(out).str();
 }
 
+bool XPath::IsPrefix(const XPath& _check_for_prefix) const
+{
+    if (path_.size() > _check_for_prefix.Size())
+        return false;
+
+    for (size_t z = 0; z < path_.size(); ++z)
+        if (path_.at(z) != _check_for_prefix.At(z))
+            return false;
+
+    return true;
+}
+
+XPath XPath::Subpath(const size_t _start, const size_t _len) const
+{
+    auto start = std::min(_start, path_.size());
+    auto len   = std::min(_len, path_.size() - start);
+
+    return XPath(std::deque<XKey> {path_.begin() + start, path_.begin() + start + len});
+}
+
+XPath XPath::PopFront(const size_t _elements)
+{
+    std::deque<XKey> removed;
+    auto             elements = _elements;
+    while (elements-- > 0 && !path_.empty()) {
+        removed.push_back(std::move(path_.front()));
+        path_.pop_front();
+    }
+    return std::move(removed);
+}
+
+bool XPath::operator<(const XPath& _other) const
+{
+    for (size_t z = 0; z < std::min(path_.size(), _other.Size()); ++z)
+        if (path_.at(z) < _other.At(z))
+            return true;
+
+    return path_.size() < _other.Size();
+}
+
+bool XPath::operator==(const XPath& _other) const
+{
+    if (path_.size() != _other.Size())
+        return false;
+
+    for (size_t z = 0; z < path_.size(); ++z)
+        if (path_.at(z) != _other.At(z))
+            return false;
+
+    return true;
+}
+
+bool XPath::operator!=(const XPath& _other) const { return !(_other == (*this)); }
+
+XKey XPath::At(size_t _idx) const
+{
+    if (_idx >= path_.size())
+        return empty_key;
+    return path_.at(_idx);
+}
+
 /*static*/ std::pair<XKeyVariant, std::string_view> XPath::_split_key(std::string_view _str)
 {
     assert(!_str.empty());
-    auto pos_dots = _str.find(kKeyDelimiter);
+    auto pos_dots = _str.find(xnode::kKeyDelimiter);
     if (pos_dots == 0)
-        return _split_key(_str.substr(kKeyDelimiter.length())); // Fix for do not have empty keys
+        return _split_key(_str.substr(xnode::kKeyDelimiter.length())); // Fix for do not have empty keys
 
     // Check for begining from brace
-    auto pos_brace = _str.find(kKeyBraceOpen);
-    if (pos_brace == 0 && _str.length() > kKeyBraceOpen.length()) {
+    auto pos_brace = _str.find(xnode::kKeyBraceOpen);
+    if (pos_brace == 0 && _str.length() > xnode::kKeyBraceOpen.length()) {
         // for opened brace the end of key is ']' - for allow to have keys with dots e.g. [allow::have::dots]
-        auto pos_end = _str.find(kKeyBraceClose);
+        auto pos_end = _str.find(xnode::kKeyBraceClose);
 
         // check for index e.g. [123]
-        if (!kStringKeyInBraces || std::isdigit(_str[1])) {
+        if (!xnode::kStringKeyInBraces || std::isdigit(_str[1])) {
             // Do not expect index more than max_int
             size_t key_idx = (size_t)std::atoi(_str.data() + 1);
-            if (pos_end == std::string_view::npos || pos_end + kKeyBraceClose.length() >= _str.length())
+            if (pos_end == std::string_view::npos || pos_end + xnode::kKeyBraceClose.length() >= _str.length())
                 return {key_idx, {}};
 
-            return {key_idx, _str.substr(pos_end + kKeyBraceClose.length())};
+            return {key_idx, _str.substr(pos_end + xnode::kKeyBraceClose.length())};
         }
 
         // 2Think: support for ['string key']
 
         // Take string e.g. [something::inside]
-        auto key_str = _str.substr(kKeyBraceOpen.length(), pos_end - kKeyBraceOpen.length());
-        if (pos_end == std::string_view::npos || pos_end + kKeyBraceClose.length() >= _str.length())
+        auto key_str = _str.substr(xnode::kKeyBraceOpen.length(), pos_end - xnode::kKeyBraceOpen.length());
+        if (pos_end == std::string_view::npos || pos_end + xnode::kKeyBraceClose.length() >= _str.length())
             return {key_str, {}};
 
-        return {key_str, _str.substr(pos_end + kKeyBraceClose.length())};
+        return {key_str, _str.substr(pos_end + xnode::kKeyBraceClose.length())};
     }
 
     if (pos_brace < pos_dots) {
-        if (pos_brace + kKeyBraceOpen.length() >= _str.length())
+        if (pos_brace + xnode::kKeyBraceOpen.length() >= _str.length())
             return {_str, {}};
 
         // Next part have to be started from '['
         return {_str.substr(0, pos_brace), _str.substr(pos_brace)};
     }
 
-    if (pos_dots == std::string_view::npos || pos_dots + kKeyDelimiter.length() >= _str.length())
+    if (pos_dots == std::string_view::npos || pos_dots + xnode::kKeyDelimiter.length() >= _str.length())
         return {_str.substr(0, pos_dots), {}};
 
-    return {_str.substr(0, pos_dots), _str.substr(pos_dots + kKeyDelimiter.length())};
+    return {_str.substr(0, pos_dots), _str.substr(pos_dots + xnode::kKeyDelimiter.length())};
 }
 
 void XPath::_add_keys_str(std::string&& _str)
@@ -106,7 +165,7 @@ void XPath::_add_keys_str(std::string&& _str)
             auto [key, next_str] = _split_key(str);
             const auto* p_str    = std::get_if<std::string_view>(&key);
             if (!p_str || !p_str->empty())
-                emplace_back(str_hold_p, std::move(key));
+                path_.emplace_back(str_hold_p, std::move(key));
 
             str = next_str;
         }

@@ -29,7 +29,7 @@ IContainer::KeyType XContainerMatchMap::ContainerKey(const XKey& _key, bool _seq
     if (_sequntial_index && _key.Type() == XKey::KeyType::Index) {
 
         size_t index = _key.IndexGet().value();
-        if (index == kIdxLast && !container_p->Empty())
+        if (index == xnode::kIdxLast && !container_p->Empty())
             index = container_p->Size() - 1;
         else if (index >= container_p->Size())
             return {};

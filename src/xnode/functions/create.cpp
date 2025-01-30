@@ -9,6 +9,14 @@ INode::SPtr xnode::Create(INode::NodeType _type, std::string_view _name /*= {}*/
     return XNodeFactoryGet()->NodeCreate(_type, _name, _uid);
 }
 
+INode::SPtr xnode::CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name /*= {}*/)
+{
+    if (_try_node && _try_node->Type() == _type)
+        return std::move(_try_node);
+
+    return Create(_type, _name);
+}
+
 INode::SPtr xnode::CreateArray(std::vector<XValue>&& _values, std::string_view _name /*= {}*/, uint64_t _uid /*= 0*/)
 {
     auto node_p = xnode::Create(INode::NodeType::Array, _name, _uid);
@@ -35,7 +43,7 @@ INode::SPtr xnode::CreateComplex(std::vector<std::pair<XPath, XValue>>&& _values
 {
     std::optional<INode::NodeType> type;
     if (!_values.empty())
-        type = XKeyToNodeType::Match(_values[0].first.front());
+        type = XKeyToNodeType::Match(_values[0].first.Front());
 
     auto node_p = xnode::Create(type.value_or(INode::NodeType::Map), _name, _uid);
 

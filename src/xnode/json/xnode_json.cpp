@@ -68,7 +68,7 @@ private:
             return true;
         }
 
-        auto [success, insert_at, prev] = nodes_.back()->Insert(std::exchange(key_, kIdxEnd), std::move(_val));
+        auto [success, insert_at, prev] = nodes_.back()->Insert(std::exchange(key_, xnode::kIdxEnd), std::move(_val));
         assert(success);
         return success;
     }

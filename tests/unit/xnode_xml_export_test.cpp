@@ -19,7 +19,7 @@ TEST(xnode_xml_export_unit_tests, check_invalid_value)
 
 TEST(xnode_xml_export_unit_tests, check_valid_map_node_simple)
 {
-    auto node = xnode::CreateMap({{"-a", "b"}, {kXMLValueName, "abc"}}, "root");
+    auto node = xnode::CreateMap({{"-a", "b"}, {xnode::kXMLValueName, "abc"}}, "root");
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);
 #endif
@@ -34,7 +34,7 @@ TEST(xnode_xml_export_unit_tests, check_valid_map_node_simple)
 
 TEST(xnode_xml_export_unit_tests, check_simlpe_format)
 {
-    auto node = xnode::CreateMap({{"-a", "b"}, {kXMLValueName, "abc"}}, "root");
+    auto node = xnode::CreateMap({{"-a", "b"}, {xnode::kXMLValueName, "abc"}}, "root");
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);
 #endif
@@ -47,7 +47,7 @@ TEST(xnode_xml_export_unit_tests, check_simlpe_format)
 
 TEST(xnode_xml_export_unit_tests, check_valid_map_node_simple2)
 {
-    auto node = xnode::CreateMap({{"-root", "b"}, {kXMLValueName, "abc"}}, "root");
+    auto node = xnode::CreateMap({{"-root", "b"}, {xnode::kXMLValueName, "abc"}}, "root");
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);
 #endif
@@ -113,12 +113,12 @@ TEST(xnode_xml_export_unit_tests, check_valid_array_node_with_attrs)
     auto array_node = xnode::CreateArray({}, "arr");
     array_node->ParentSet(node);
 
-    auto el1 = xnode::CreateMap({{"-name", "one"}, {kXMLValueName, 1}});
-    array_node->Insert(kIdxEnd, el1);
-    auto el2 = xnode::CreateMap({{"-value", 33}, {kXMLValueName, 2}});
-    array_node->Insert(kIdxEnd, el2);
-    auto el3 = xnode::CreateMap({{"-islast", true}, {kXMLValueName, 3}});
-    array_node->Insert(kIdxEnd, el3);
+    auto el1 = xnode::CreateMap({{"-name", "one"}, {xnode::kXMLValueName, 1}});
+    array_node->Insert(xnode::kIdxEnd, el1);
+    auto el2 = xnode::CreateMap({{"-value", 33}, {xnode::kXMLValueName, 2}});
+    array_node->Insert(xnode::kIdxEnd, el2);
+    auto el3 = xnode::CreateMap({{"-islast", true}, {xnode::kXMLValueName, 3}});
+    array_node->Insert(xnode::kIdxEnd, el3);
 
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);
@@ -171,12 +171,12 @@ TEST(xnode_xml_export_unit_tests, check_valid_array_node_with_attrs2)
     auto array_node = xnode::CreateArray({}, "arr");
     array_node->ParentSet(node);
 
-    auto el1 = xnode::CreateMap({{"-name", "one"}, {kXMLValueName, 1}});
-    array_node->Insert(kIdxEnd, el1);
-    auto el2 = xnode::CreateMap({{"-value", 33}, {kXMLValueName, 2}}, "bla");
-    array_node->Insert(kIdxEnd, el2);
-    auto el3 = xnode::CreateMap({{"-islast", true}, {kXMLValueName, 3}});
-    array_node->Insert(kIdxEnd, el3);
+    auto el1 = xnode::CreateMap({{"-name", "one"}, {xnode::kXMLValueName, 1}});
+    array_node->Insert(xnode::kIdxEnd, el1);
+    auto el2 = xnode::CreateMap({{"-value", 33}, {xnode::kXMLValueName, 2}}, "bla");
+    array_node->Insert(xnode::kIdxEnd, el2);
+    auto el3 = xnode::CreateMap({{"-islast", true}, {xnode::kXMLValueName, 3}});
+    array_node->Insert(xnode::kIdxEnd, el3);
 
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);
@@ -203,19 +203,19 @@ TEST(xnode_xml_export_unit_tests, check_valid_array_node_nested_map)
     array_node->ParentSet(node);
 
     // auto el1 = xnode::CreateMap({{"name", "one"}, {kXMLValueName, 1}});
-    array_node->Insert(kIdxEnd, 1);
+    array_node->Insert(xnode::kIdxEnd, 1);
     auto array_node2 = xnode::CreateArray({2});
 
-    auto el2_1 = xnode::CreateMap({{kXMLValueName, "2.1"}}, "foo");
-    array_node2->Insert(kIdxEnd, el2_1);
+    auto el2_1 = xnode::CreateMap({{xnode::kXMLValueName, "2.1"}}, "foo");
+    array_node2->Insert(xnode::kIdxEnd, el2_1);
 
-    auto el2_2 = xnode::CreateMap({{kXMLValueName, "2.2"}}, "bar");
-    array_node2->Insert(kIdxEnd, el2_2);
+    auto el2_2 = xnode::CreateMap({{xnode::kXMLValueName, "2.2"}}, "bar");
+    array_node2->Insert(xnode::kIdxEnd, el2_2);
 
-    array_node->Insert(kIdxEnd, array_node2);
+    array_node->Insert(xnode::kIdxEnd, array_node2);
 
     // auto el3 = xnode::CreateMap({{"islast", true}, {kXMLValueName, 3}});
-    array_node->Insert(kIdxEnd, 3);
+    array_node->Insert(xnode::kIdxEnd, 3);
 
 #ifdef _DEBUG
     auto json = xnode::ToJson(node);

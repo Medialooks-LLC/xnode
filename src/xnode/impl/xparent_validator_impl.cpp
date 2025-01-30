@@ -32,17 +32,16 @@ IContainer::KeyType XParentValidatorArray::RemoveDuplicates(IContainer*         
     if (_container_p->Size() <= 1)
         return {};
 
-    
     IContainer::KeyType key_removed;
     // Fix for idx_last
-    IContainer::KeyType key_ignored = (_key_ignored == IContainer::KeyType(kIdxLast) ? _container_p->Size() - 1 :
-                                                                                       _key_ignored);
+    IContainer::KeyType key_ignored = (_key_ignored == IContainer::KeyType(xnode::kIdxLast) ? _container_p->Size() - 1 :
+                                                                                              _key_ignored);
     _container_p->ForEach([&](const auto& key, const auto& val) {
         if (key != key_ignored && val == _value_remove) {
             key_removed = key;
-            return OnEachRes::EraseStop;
+            return xnode::OnEachRes::EraseStop;
         }
-        return OnEachRes::Next;
+        return xnode::OnEachRes::Next;
     });
 
     return key_removed;

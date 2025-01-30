@@ -32,9 +32,9 @@ bool XContainerMap::ForEach(std::function<bool(const KeyType&, const MappedType&
 }
 
 // Return 'false' if empty or key not found
-bool XContainerMap::ForEach(std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
-                            const std::optional<KeyType>&                           _from_key,
-                            const OnChangePF&                                       _pf_on_change)
+bool XContainerMap::ForEach(std::function<xnode::OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
+                            const std::optional<KeyType>&                                  _from_key,
+                            const OnChangePF&                                              _pf_on_change)
 {
     auto it = values_map_.begin();
     if (_from_key.has_value())
@@ -47,7 +47,7 @@ bool XContainerMap::ForEach(std::function<OnEachRes(const KeyType&, MappedType&)
         while (it != values_map_.end()) {
             MappedType val = it->second; // For detect chnaging
             auto       res = _pf_on_each(StringToKey_(it->first), val);
-            if (res == OnEachRes::Erase || res == OnEachRes::EraseStop) {
+            if (res == xnode::OnEachRes::Erase || res == xnode::OnEachRes::EraseStop) {
                 if (!_pf_on_change || _pf_on_change(StringToKey_(it->first), it->second, MappedType())) {
                     assert(val == it->second);
                     it = values_map_.erase(it);
@@ -65,7 +65,7 @@ bool XContainerMap::ForEach(std::function<OnEachRes(const KeyType&, MappedType&)
                 ++it;
             }
 
-            if (res == OnEachRes::Stop || res == OnEachRes::EraseStop)
+            if (res == xnode::OnEachRes::Stop || res == xnode::OnEachRes::EraseStop)
                 break;
         }
     }

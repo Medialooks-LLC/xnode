@@ -30,7 +30,7 @@ TEST(xnode_regression_tests, map_set_to_exists_key)
     EXPECT_TRUE(child1_res->IsName("child"));
 
     auto child2 = xnode::Create(INode::NodeType::Array, "child_arr");
-    child2->Insert(kIdxBegin, "some_value");
+    child2->Insert(xnode::kIdxBegin, "some_value");
     res = parent_node->Set(child1->NameGet(), child2);
     EXPECT_TRUE(res.first);
     val = parent_node->At("child");
@@ -39,7 +39,7 @@ TEST(xnode_regression_tests, map_set_to_exists_key)
     EXPECT_TRUE(child2_res);
     EXPECT_TRUE(child2_res->IsName("child"));
     EXPECT_EQ(1, child2_res->Size());
-    EXPECT_EQ("some_value", child2_res->At(kIdxBegin).String());
+    EXPECT_EQ("some_value", child2_res->At(xnode::kIdxBegin).String());
 }
 
 // NOLINTEND(*)

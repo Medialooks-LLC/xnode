@@ -283,7 +283,14 @@ public:
     /// @brief Retrieves a XENUM from this XValue.
     /// @tparam TObject The object type.
     template <typename TEnum>
-    TEnum EnumGet(const TEnum _default = {}) const
+    std::optional<TEnum> EnumGet() const
+    {
+        return xenum::FromString<TEnum>(String());
+    }
+
+    /// @brief Retrieves a XENUM from this XValue, std::nullopt if not suitable for enum
+    template <typename TEnum>
+    TEnum EnumGet(const TEnum _default) const
     {
         return xenum::FromString(String(), _default);
     }

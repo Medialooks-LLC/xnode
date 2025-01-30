@@ -38,9 +38,9 @@ bool XContainerMapWithErase::ForEach(std::function<bool(const KeyType&, const Ma
 }
 
 // Return 'false' if empty or key not found
-bool XContainerMapWithErase::ForEach(std::function<OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
-                                     const std::optional<KeyType>&                           _from_key,
-                                     const OnChangePF&                                       _pf_on_change)
+bool XContainerMapWithErase::ForEach(std::function<xnode::OnEachRes(const KeyType&, MappedType&)>&& _pf_on_each,
+                                     const std::optional<KeyType>&                                  _from_key,
+                                     const OnChangePF&                                              _pf_on_change)
 {
     bool found = false;
     XContainerMap::ForEach(
@@ -48,27 +48,27 @@ bool XContainerMapWithErase::ForEach(std::function<OnEachRes(const KeyType&, Map
             if (IsErasedValue_(val)) {
                 // Check for erased lookup value
                 if (!found && _from_key.has_value() && _from_key.value() == key)
-                    return OnEachRes::Stop;
+                    return xnode::OnEachRes::Stop;
 
-                return OnEachRes::Next;
+                return xnode::OnEachRes::Next;
             }
 
             found = true;
 
             if (!_pf_on_each)
-                return OnEachRes::Stop;
+                return xnode::OnEachRes::Stop;
 
             auto each_res = _pf_on_each(key, val);
-            if (each_res == OnEachRes::Erase || each_res == OnEachRes::EraseStop) {
+            if (each_res == xnode::OnEachRes::Erase || each_res == xnode::OnEachRes::EraseStop) {
                 if (!_pf_on_change || _pf_on_change(key, val, MappedType())) {
                     // For erasing -> replace via empty value
                     val = ErasedValue_();
                 }
 
-                return each_res == OnEachRes::EraseStop ? OnEachRes::Stop : OnEachRes::Next;
+                return each_res == xnode::OnEachRes::EraseStop ? xnode::OnEachRes::Stop : xnode::OnEachRes::Next;
             }
 
-            assert(each_res == OnEachRes::Stop || each_res == OnEachRes::Next);
+            assert(each_res == xnode::OnEachRes::Stop || each_res == xnode::OnEachRes::Next);
             return each_res;
         },
         _from_key,

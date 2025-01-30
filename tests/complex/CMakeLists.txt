@@ -4,11 +4,11 @@ project(xnode_complex_tests)
 
 FILE(GLOB FILES
     ../../include/*.h
-	xobject_demo/*.cpp
-	xobject_demo/*.h
+    xobject_demo/*.cpp
+    xobject_demo/*.h
     *.cpp
-	*.hpp
-	*.h
+    *.hpp
+    *.h
 )
 
 include_directories(

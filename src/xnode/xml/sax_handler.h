@@ -33,8 +33,8 @@ private:
 public:
     XNodeSaxHandler(uint64_t         _uid              = 0,
                     std::string_view _name             = {},
-                    std::string_view _attribute_prefix = kXMLAttributePrefix,
-                    std::string_view _value_name       = kXMLValueName);
+                    std::string_view _attribute_prefix = xnode::kXMLAttributePrefix,
+                    std::string_view _value_name       = xnode::kXMLValueName);
 
     void startElement(const XMLCh* const    _uri,
                       const XMLCh* const    _localname,

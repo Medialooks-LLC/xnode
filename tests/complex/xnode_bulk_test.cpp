@@ -82,7 +82,8 @@ TEST(xnode_bulk_tests, bulk_set_node)
     EXPECT_EQ(node_array_sp->At(5), node_map_sp3);
 
     // No insertion nodes what are already in array
-    std::tie(count, last_key) = node_array_sp->BulkInsert(kIdxLast, {node_map_sp1, 999.9, node_map_sp2, node_map_sp3});
+    std::tie(count, last_key) = node_array_sp->BulkInsert(xnode::kIdxLast,
+                                                          {node_map_sp1, 999.9, node_map_sp2, node_map_sp3});
     EXPECT_EQ(count, 1);
     EXPECT_EQ(node_array_sp->At(5), 999.9);
     EXPECT_EQ(node_array_sp->At(6), node_map_sp3);

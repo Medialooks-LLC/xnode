@@ -28,7 +28,7 @@ TEST(xnode_xml_threaded_tests, check_valid_map_node_nested_node_in_text)
         auto val = node->At("-a");
         EXPECT_FALSE(val.IsEmpty());
         EXPECT_EQ("b", val.String());
-        val = node->At(kXMLValueName); // [ "some ", {"i" : "italic text"}, " and ", {"b" : "bold text"}, "." ]
+        val = node->At(xnode::kXMLValueName); // [ "some ", {"i" : "italic text"}, " and ", {"b" : "bold text"}, "." ]
         EXPECT_FALSE(val.IsEmpty());
         auto arr_node = val.QueryPtr<INode>();
         EXPECT_EQ(INode::NodeType::Array, arr_node->Type());

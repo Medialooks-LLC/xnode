@@ -5,8 +5,8 @@ project(xnode_unit_tests)
 FILE(GLOB FILES
     ../../include/*.h
     *.cpp
-	*.hpp
-	*.h
+    *.hpp
+    *.h
 )
 
 include_directories(
