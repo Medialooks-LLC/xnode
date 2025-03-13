@@ -1,3 +1,4 @@
 [submodule "submodules/xbase"]
 	path = submodules/xbase
 	url = https://github.com/Medialooks-LLC/xbase.git
+	branch = github-xmedia-beta-ver1.0.1.2

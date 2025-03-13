@@ -122,7 +122,7 @@ XValueRT xnode::Increment(const INode::SPtr& _node_this, XPath&& _path, XValue&&
     INode::SPtr node_dest = _node_this;
     auto        key_dest  = _path.PopBack();
     if (!_path.Empty())
-        node_dest = xnode::NodeGet(_node_this, std::move(_path));
+        node_dest = xnode::NodeGet(_node_this, std::move(_path), XKeyToNodeType::Match(key_dest), true);
 
     if (!node_dest)
         return {};
