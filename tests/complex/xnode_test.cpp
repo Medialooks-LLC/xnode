@@ -37,8 +37,8 @@ TEST(xnode_tests, map_insert_and_at)
     spMap->Insert("node", spXNode);
     spMap->Insert("node2", spMap);
 #endif
-    spMap->At("something").Bool(true);
-    spMap->At("something").Bool();
+    auto v1 = spMap->At("something").Bool(true);
+    auto v2 = spMap->At("something").Bool();
 }
 
 TEST(xnode_tests, complex)

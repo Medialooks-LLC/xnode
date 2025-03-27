@@ -95,7 +95,7 @@ public:
      * @return The type of the node.
      * @see    NodeType
      */
-    virtual NodeType Type() const = 0;
+    [[nodiscard]] virtual NodeType Type() const = 0;
 
     ///@name Parent methods
     ///@{
@@ -106,13 +106,13 @@ public:
      * @note   This method provides the same functionality as ParentGet(), but
      *         returns a constant reference.
      */
-    virtual INode::SPtrC ParentGet() const = 0;
+    [[nodiscard]] virtual INode::SPtrC ParentGet() const = 0;
     /**
      * @brief  Get the parent node.
      * @return INode::SPtr to the parent node, or nullptr if the
      *         node has no parent.
      */
-    virtual INode::SPtr ParentGet() = 0;
+    [[nodiscard]] virtual INode::SPtr ParentGet() = 0;
     /**
      * @brief                       Sets a new parent node for the current node.
      * @param _parent               An optional pointer to a parent node. If nullptr, this function detach the current
@@ -141,7 +141,7 @@ public:
      * @brief  Function to get the name of this node.
      * @return The name of the node.
      */
-    virtual std::string NameGet() const = 0;
+    [[nodiscard]] virtual std::string NameGet() const = 0;
     /**
      * @brief                Function to set the name of this node.
      * @param _name_set      The new name of the node.
@@ -157,7 +157,7 @@ public:
      * @param _name_check The name to check against.
      * @return            \c true if the name matches, \c false otherwise.
      */
-    virtual bool IsName(std::string_view _name_check) const = 0;
+    [[nodiscard]] virtual bool IsName(std::string_view _name_check) const = 0;
     ///@}
 
     ///@name OnChange callback methods
@@ -197,7 +197,7 @@ public:
      * @param _key                   The key to check.
      * @return                       \c true if the key is valid, else \c false.
      */
-    virtual bool IsKeyValid(bool _map_access_by_index, const XKey& _key) const = 0;
+    [[nodiscard]] virtual bool IsKeyValid(bool _map_access_by_index, const XKey& _key) const = 0;
     /**
      * @brief   Erases all elements from the container.
      * @details This method iterates over the nodes in the container and detach all nodes
@@ -207,11 +207,11 @@ public:
     /**
      * @brief Return the number of elements in the container.
      */
-    virtual size_t Size() const = 0;
+    [[nodiscard]] virtual size_t Size() const = 0;
     /**
      * @brief Checks if the container has no elements or, in other words, if the node has no children.
      */
-    virtual bool Empty() const = 0;
+    [[nodiscard]] virtual bool Empty() const = 0;
 
     /**
      * @brief       Find the value associated with the given key in this node.
@@ -220,13 +220,13 @@ public:
      * @note        This method provides the same functionality as At(const XKey& _key), but
      *       returns a constant reference.
      */
-    virtual XValueRT At(const XKey& _key) const = 0;
+    [[nodiscard]] virtual XValueRT At(const XKey& _key) const = 0;
     /**
      * @brief       Find the value associated with the given key in this node.
      * @param _key  The key.
      * @return      The XValueRT (value with timestamp) associated with the given key, or an empty value.
      */
-    virtual XValueRT At(const XKey& _key) = 0;
+    [[nodiscard]] virtual XValueRT At(const XKey& _key) = 0;
 
     /**
      * @brief                Iterate over the node items and apply the specified function on each item.
@@ -365,7 +365,7 @@ public:
      * @param _keys Vector of keys to retrieve values for.
      * @return A vector of pairs: {key, value} for using them read only.
      */
-    virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) const = 0;
+    [[nodiscard]] virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) const = 0;
     /**
      * @brief Bulk retrieves values for given keys without a custom callback function.
      * @details The BulkGet method without a custom callback function retrieves values for multiple keys at once,
@@ -373,7 +373,7 @@ public:
      * @param _keys Vector of keys to retrieve values for.
      * @return A vector of pairs: {key, value}.
      */
-    virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) = 0;
+    [[nodiscard]] virtual std::vector<std::pair<XKey, XValueRT>> BulkGet(const std::vector<XKey>& _keys) = 0;
 
     // Return vector of {key, value} of taken elements, take or not elements decided by callback res,
     // - default(empty) callback is OnCopyRes::Take

@@ -386,7 +386,7 @@ TEST(xnode_thread_tests, thread_node_complex_ops)
                 }
                 case 9: {
                     xnode::Set(node_map_sp, XPath(keys[0], keys[1], keys[2], "array", 5, value_name), "array_val");
-                    xnode::At(node_map_sp, XPath(keys[0], keys[1], keys[2], "array", 5));
+                    auto val = xnode::At(node_map_sp, XPath(keys[0], keys[1], keys[2], "array", 5));
                     break;
                 }
             }

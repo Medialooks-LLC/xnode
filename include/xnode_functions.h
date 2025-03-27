@@ -18,19 +18,19 @@ namespace xsdk::xnode {
  *
  * @return std::shared_ptr to the newly created XNode
  */
-INode::SPtr Create(INode::NodeType _type, std::string_view _name = {}, uint64_t _uid = 0);
+[[nodiscard]] INode::SPtr Create(INode::NodeType _type, std::string_view _name = {}, uint64_t _uid = 0);
 
 /**
  * @brief Check existed node for specified type, if not suitable, creates an XNode of the given type
  *
- * @param _try_node Node for check 
+ * @param _try_node Node for check
  * @param _type Node type to create
  * @param _name Optional name for the node
  * @param _uid Optional unique identifier for the node
  *
  * @return std::shared_ptr to the newly created XNode
  */
-INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name = {});
+[[nodiscard]] INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name = {});
 /**
  * @brief Creates an XNode array
  *
@@ -40,7 +40,9 @@ INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std
  *
  * @return std::shared_ptr to the newly created array XNode
  */
-INode::SPtr CreateArray(std::vector<XValue>&& _values = {}, std::string_view _name = {}, uint64_t _uid = 0);
+[[nodiscard]] INode::SPtr CreateArray(std::vector<XValue>&& _values = {},
+                                      std::string_view      _name   = {},
+                                      uint64_t              _uid    = 0);
 /**
  * @brief Creates an XNode map
  *
@@ -50,9 +52,9 @@ INode::SPtr CreateArray(std::vector<XValue>&& _values = {}, std::string_view _na
  *
  * @return std::shared_ptr to the newly created map XNode
  */
-INode::SPtr CreateMap(std::vector<std::pair<XKey, XValue>>&& _values = {},
-                      std::string_view                       _name   = {},
-                      uint64_t                               _uid    = 0);
+[[nodiscard]] INode::SPtr CreateMap(std::vector<std::pair<XKey, XValue>>&& _values = {},
+                                    std::string_view                       _name   = {},
+                                    uint64_t                               _uid    = 0);
 /**
  * @brief Creates a complex XNode (map and/or array)
  *
@@ -62,9 +64,9 @@ INode::SPtr CreateMap(std::vector<std::pair<XKey, XValue>>&& _values = {},
  *
  * @return std::shared_ptr to the newly created complex XNode
  */
-INode::SPtr CreateComplex(std::vector<std::pair<XPath, XValue>>&& _values,
-                          std::string_view                        _name = {},
-                          uint64_t                                _uid  = 0);
+[[nodiscard]] INode::SPtr CreateComplex(std::vector<std::pair<XPath, XValue>>&& _values,
+                                        std::string_view                        _name = {},
+                                        uint64_t                                _uid  = 0);
 
 /**
  * @brief Enum class representing different types of nodes.
@@ -81,7 +83,7 @@ enum class XNodeType {
  * @param _val The value to check.
  * @return The type of the value. @see XNodeType.
  */
-XNodeType NodeTypeGet(const XValue& _val);
+[[nodiscard]] XNodeType NodeTypeGet(const XValue& _val);
 
 /**
  * @brief Clones an xnode with a callback function for cloning items.
@@ -93,11 +95,12 @@ XNodeType NodeTypeGet(const XValue& _val);
  * @param _cloned_uid      Optional unique identifier for the node
  * @return A pointer to the cloned INode or nullptr in case of failure.
  */
-INode::SPtr Clone(XValue&&                                                                     _value_with_node,
-                  bool                                                                         _clone_nodes,
-                  const std::function<OnCopyRes(const INode::SPtrC&, const XKey&, XValueRT&)>& _pf_on_item  = {},
-                  std::optional<std::string_view>                                              _cloned_name = {},
-                  uint64_t                                                                     _cloned_uid  = 0);
+[[nodiscard]] INode::SPtr Clone(
+    XValue&&                                                                     _value_with_node,
+    bool                                                                         _clone_nodes,
+    const std::function<OnCopyRes(const INode::SPtrC&, const XKey&, XValueRT&)>& _pf_on_item  = {},
+    std::optional<std::string_view>                                              _cloned_name = {},
+    uint64_t                                                                     _cloned_uid  = 0);
 
 /**
  * @brief Inserts a new node into an existing node.
@@ -129,17 +132,17 @@ INode::InsertRes NodeConstInsert(const INode::SPtr&  _node_this,
  * @param _node_key The key of the node to retrieve.
  * @return A pointer to the node if it exists, otherwise null.
  */
-INode::SPtr NodeGetByKey(const INode::SPtr&             _node_this,
-                         const XKey&                    _key,
-                         std::optional<INode::NodeType> _node_type       = std::nullopt,
-                         bool                           _convert_to_type = false);
+[[nodiscard]] INode::SPtr NodeGetByKey(const INode::SPtr&             _node_this,
+                                       const XKey&                    _key,
+                                       std::optional<INode::NodeType> _node_type       = std::nullopt,
+                                       bool                           _convert_to_type = false);
 /**
  * @brief Retrieves a node by its key.
  * @param _node_this The node to search in.
  * @param _node_key The key of the node to retrieve.
  * @return A pointer to the constant node if it exists, otherwise null.
  */
-INode::SPtrC NodeConstGetByKey(const INode::SPtrC& _node_this, const XKey& _key);
+[[nodiscard]] INode::SPtrC NodeConstGetByKey(const INode::SPtrC& _node_this, const XKey& _key);
 
 /**
  * @brief Compares two nodes based on their content and structure.
@@ -208,7 +211,7 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
  * @param _path XPath to traverse to the target node.
  * @return An INode::SPtrC instance to the target node.
  */
-INode::SPtrC NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] INode::SPtrC NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path);
 
 /**
  * @brief Merge content of two nodes, if one is empty -> return non empty one,
@@ -217,7 +220,7 @@ INode::SPtrC NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path);
  * @param _to second INode const instance to for merge.
  * @return An INode::SPtrC merged instance of two nodes
  */
-INode::SPtrC NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _to);
+[[nodiscard]] INode::SPtrC NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _to);
 
 /**
  * @brief Retrieves the size of map/array at the specified XPath or std::nullopt if the path does not exist or dest is
@@ -227,7 +230,7 @@ INode::SPtrC NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _to);
  * @return Size of map/array at the specified XPath or std::nullopt if the path does not exist or dest is
  * not map/array
  */
-std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path);
 
 /**
  * @brief Retrieves the XValueRT at the specified XPath or null if the path does not exist.
@@ -235,14 +238,14 @@ std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path);
  * @param _path XPath to traverse to the target node.
  * @return An XValueRT instance containing the target node's value or null if the path does not exist.
  */
-XValueRT At(const INode::SPtr& _node_this, XPath&& _path);
+[[nodiscard]] XValueRT At(const INode::SPtr& _node_this, XPath&& _path);
 /**
  * @brief Retrieves the XValueRT at the specified XPath or null if the path does not exist.
  * @param _node_this INode const instance to start traversing from.
  * @param _path XPath to traverse to the target node.
  * @return An XValueRT instance containing the target node's value or null if the path does not exist.
  */
-XValueRT At(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] XValueRT At(const INode::SPtrC& _node_this, XPath&& _path);
 /**
  * @brief Sets the value of a node at the specified XPath.
  * @param _node_this INode instance to start traversing from.
@@ -259,9 +262,9 @@ std::pair<bool, XValueRT> Set(const INode::SPtr& _node_this, XPath&& _path, XVal
  * @param _overwrite overwite original values flag
  * @return New node with orignial and appended values
  */
-INode::SPtr NodeCombine(const INode::SPtrC&                    _node_base,
-                        std::vector<std::pair<XKey, XValue>>&& _values,
-                        bool                                   _overwrite);
+[[nodiscard]] INode::SPtr NodeCombine(const INode::SPtrC&                    _node_base,
+                                      std::vector<std::pair<XKey, XValue>>&& _values,
+                                      bool                                   _overwrite);
 /**
  * @brief Inserts a new value into the specified XPath.
  * @param _node_this INode instance to start traversing from.
@@ -308,7 +311,7 @@ size_t EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path, XValue
  * @param _path The XPath to navigate through.
  * @return A vector containing all values of the element by the specified XPath.
  */
-std::vector<XValueRT> ValuesList(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] std::vector<XValueRT> ValuesList(const INode::SPtrC& _node_this, XPath&& _path);
 
 /**
  * @brief Retrieves the nodes at the given XPath.
@@ -318,16 +321,17 @@ std::vector<XValueRT> ValuesList(const INode::SPtrC& _node_this, XPath&& _path);
  * @param _path The XPath to navigate through.
  * @return A vector containing all nodes at the XPath.
  */
-std::vector<std::pair<XKey, XValueRT>> NodesList(const INode::SPtr& _node_this,
-                                                 bool               _include_const, //??? may be set default value?
-                                                 XPath&&            _path = XPath());
+[[nodiscard]] std::vector<std::pair<XKey, XValueRT>> NodesList(const INode::SPtr& _node_this,
+                                                               bool    _include_const, //??? may be set default value?
+                                                               XPath&& _path = XPath());
 /**
  * @brief Retrieves the constant nodes at the given XPath.
  * @param _node_this INode const instance to start traversing from.
  * @param _path XPath to traverse to the target node.
  * @return A vector containing all constant nodes at the XPath.
  */
-std::vector<std::pair<XKey, XValueRT>> NodesConstList(const INode::SPtrC& _node_this, XPath&& _path = XPath());
+[[nodiscard]] std::vector<std::pair<XKey, XValueRT>> NodesConstList(const INode::SPtrC& _node_this,
+                                                                    XPath&&             _path = XPath());
 
 /**
  * @brief Retrieves the nodes at the given XPath.
@@ -368,7 +372,7 @@ std::vector<INode::SPtrC> ChildNodesConstGet(
  * @return A pair containing the wrapped value and a boolean indicating if the wrapping was successful.
  * @note If the wrapping fails, the original node is returned.
  */
-std::pair<XValue, bool> NodeWrap(XValue&& _node_val);
+[[nodiscard]] std::pair<XValue, bool> NodeWrap(XValue&& _node_val);
 
 /**
  * @brief Unwrap node from map {"name" : { node }}
@@ -377,7 +381,7 @@ std::pair<XValue, bool> NodeWrap(XValue&& _node_val);
  * @return A pair containing the unwrapped value and a boolean indicating if the unwrapping was successful.
  * @note If the unwrapping fails, the original wrapped node is returned.
  */
-std::pair<XValue, bool> NodeUnwrap(XValue&& _node_val);
+[[nodiscard]] std::pair<XValue, bool> NodeUnwrap(XValue&& _node_val);
 
 /**
  * @brief Insert wrapped node into array {"name" : { node }}
@@ -410,13 +414,13 @@ XValue ArrayNodesUnwrap(XValue&& _array_val);
  * @return The XValue corresponding to _key.
  * @note After conversion, the value will be of type size_t or string, or will be empty.
  */
-XValue ValueFromKey(const XKey& _key);
+[[nodiscard]] XValue ValueFromKey(const XKey& _key);
 /**
  * @brief Convert an XValue to XKey.
  * @param _value The XValue to convert.
  * @return The XKey corresponding to _value or empty if the conversion fails.
  */
-XKey KeyFromValue(const XValue& _value);
+[[nodiscard]] XKey KeyFromValue(const XValue& _value);
 
 } // namespace xsdk::xnode
 
