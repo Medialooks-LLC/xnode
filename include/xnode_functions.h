@@ -26,11 +26,25 @@ namespace xsdk::xnode {
  * @param _try_node Node for check
  * @param _type Node type to create
  * @param _name Optional name for the node
- * @param _uid Optional unique identifier for the node
  *
  * @return std::shared_ptr to the newly created XNode
  */
 [[nodiscard]] INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name = {});
+/**
+ * @brief Check existed node for specified type, if not suitable, creates an XNode of the given type, if so, clone
+ * existed node
+ *
+ * @param _try_node Node for check
+ * @param _type Node type to create
+ * @param _name Optional name for the node
+ * @param _uid Optional unique identifier for the node
+ *
+ * @return std::shared_ptr to the newly created XNode
+ */
+[[nodiscard]] INode::SPtr CreateOrClone(const INode::SPtrC& _try_node,
+                                        const bool          _clone_nodes,
+                                        INode::NodeType     _type,
+                                        std::string_view    _name = {});
 /**
  * @brief Creates an XNode array
  *
@@ -224,13 +238,13 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
 
 /**
  * @brief Retrieves the size of map/array at the specified XPath or std::nullopt if the path does not exist or dest is
- * not map/array
+ * not map/array, if path empty -> Size() for _node_this
  * @param _node_this INode instance to start traversing from.
- * @param _path XPath to traverse to the target node.
+ * @param _path XPath to traverse to the target node
  * @return Size of map/array at the specified XPath or std::nullopt if the path does not exist or dest is
  * not map/array
  */
-[[nodiscard]] std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path = {});
 
 /**
  * @brief Retrieves the XValueRT at the specified XPath or null if the path does not exist.

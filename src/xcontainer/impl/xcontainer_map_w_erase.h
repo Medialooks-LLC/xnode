@@ -18,7 +18,7 @@ class XContainerMapWithErase: public XContainerMap {
     static bool IsErasedValue_(const MappedType& _value)
     {
         // Check timestamp
-        return _value.IsEmpty() && !_value.TimeIsAbsent();
+        return !_value && !_value.TimeIsAbsent();
     }
 
     static MappedType ErasedValue_()

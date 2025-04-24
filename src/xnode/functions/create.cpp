@@ -12,7 +12,18 @@ INode::SPtr xnode::Create(INode::NodeType _type, std::string_view _name /*= {}*/
 INode::SPtr xnode::CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name /*= {}*/)
 {
     if (_try_node && _try_node->Type() == _type)
-        return std::move(_try_node);
+        return _try_node;
+
+    return Create(_type, _name);
+}
+
+INode::SPtr xnode::CreateOrClone(const INode::SPtrC& _try_node,
+                                 const bool          _clone_nodes,
+                                 INode::NodeType     _type,
+                                 std::string_view    _name /*= {}*/)
+{
+    if (_try_node && _try_node->Type() == _type)
+        return xnode::Clone(_try_node, _clone_nodes);
 
     return Create(_type, _name);
 }

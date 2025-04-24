@@ -528,4 +528,62 @@ TEST(xnode_utests, clone_empty_arr_names)
     EXPECT_EQ(clone_new_name->NameGet(), "new_name");
 }
 
+TEST(xnode_utests, create_or_clone)
+{
+    auto arr_node = xnode::CreateArray({"123", 567}, "test_array");
+    ASSERT_TRUE(arr_node);
+
+    auto map_node = xnode::CreateMap({{"test", 12434.5}}, "test_map");
+    ASSERT_TRUE(map_node);
+
+    auto check_map = xnode::CreateOrClone(map_node, false, INode::NodeType::Map);
+    ASSERT_TRUE(check_map);
+    EXPECT_EQ(check_map->Type(), INode::NodeType::Map);
+    EXPECT_EQ(xnode::Compare(check_map, map_node, true), 0);
+
+    auto check_map2 = xnode::CreateOrClone(arr_node, false, INode::NodeType::Map);
+    ASSERT_TRUE(check_map2);
+    EXPECT_EQ(check_map2->Type(), INode::NodeType::Map);
+    EXPECT_TRUE(check_map2->Empty());
+
+    auto check_map3 = xnode::CreateOrClone(nullptr, false, INode::NodeType::Map);
+    ASSERT_TRUE(check_map3);
+    EXPECT_EQ(check_map3->Type(), INode::NodeType::Map);
+    EXPECT_TRUE(check_map3->Empty());
+
+    auto check_arr = xnode::CreateOrClone(arr_node, false, INode::NodeType::Array);
+    ASSERT_TRUE(check_arr);
+    EXPECT_EQ(check_arr->Type(), INode::NodeType::Array);
+    EXPECT_EQ(xnode::Compare(check_arr, arr_node, true), 0);
+
+    auto check_arr2 = xnode::CreateOrClone(map_node, false, INode::NodeType::Array);
+    ASSERT_TRUE(check_arr2);
+    EXPECT_EQ(check_arr2->Type(), INode::NodeType::Array);
+    EXPECT_TRUE(check_arr2->Empty());
+
+    auto check_arr3 = xnode::CreateOrClone(nullptr, false, INode::NodeType::Array);
+    ASSERT_TRUE(check_arr3);
+    EXPECT_EQ(check_arr3->Type(), INode::NodeType::Array);
+    EXPECT_TRUE(check_arr3->Empty());
+}
+
+TEST(xnode_utests, empty_string) {
+
+    auto map_node = xnode::CreateMap();
+    ASSERT_TRUE(map_node);
+    auto [ok,prev] = map_node->Set("empty_string", "");
+    ASSERT_TRUE(ok);
+    ASSERT_TRUE(!prev);
+    EXPECT_EQ(map_node->Size(), 1);
+
+    auto val = map_node->At("empty_string");
+    EXPECT_EQ(val.Type(), XValue::ValueType::kString);
+    EXPECT_TRUE(val.IsEmpty()) << "Empty string is not IsEmpty()";
+
+    val = map_node->Erase("empty_string");
+    EXPECT_EQ(val.Type(), XValue::ValueType::kString);
+    EXPECT_TRUE(val.IsEmpty()) << "Empty string is not IsEmpty()";
+    EXPECT_EQ(map_node->Size(), 0);
+}
+
 // NOLINTEND(*)

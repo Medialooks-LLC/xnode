@@ -46,7 +46,7 @@ public:
         kNonConst = 0x100,
 
         /// Represents an empty XValue.
-        kEmpty = 0x00,
+        kEmpty = 0x00, // TODO: Rename to kNotInitialized for do not confuse with IsEmpty()
         /// Represents a null XValue.
         kNull = 0x01,
         /// Represents a boolean XValue.
@@ -218,7 +218,7 @@ public:
 
     /// @brief Returns the value type of this XValue.
     [[nodiscard]] ValueType Type() const noexcept;
-    /// @brief Checks if this XValue is empty.
+    /// @brief Checks if this XValue is empty (no value, or nullptr, or empty string (?))
     [[nodiscard]] bool IsEmpty() const noexcept;
     /// @brief Checks if this XValue is an object.
     [[nodiscard]] bool IsObject() const noexcept;
