@@ -138,9 +138,15 @@ void WriteXValue(TWriter&& _writer, const XValueRT& _value_at, const xnode::Json
                            static_cast<rapidjson::SizeType>(_value_at.StringView().size()));
             break;
         case XValue::kObject:
-        case XValue::kConstObject:
-            WriteXNode(_value_at.QueryPtrC<INode>(), _writer, _json_format);
-            break;
+        case XValue::kConstObject: {
+            auto node_sp = _value_at.QueryPtrC<INode>();
+            if (node_sp) {
+                WriteXNode(node_sp, _writer, _json_format);
+            }
+            else {
+                // TODO: Serialize custom object (e.g. via lambda ?)
+            }
+        } break;
 
         default:
             assert(!"WriteXValue - unknown type");
@@ -151,6 +157,8 @@ void WriteXValue(TWriter&& _writer, const XValueRT& _value_at, const xnode::Json
 template <class TWriter>
 void WriteXNode(const INode::SPtrC& _node_sp, TWriter&& _writer, const xnode::JsonFormat _json_format)
 {
+    assert(_node_sp);
+
     if (_node_sp->Type() == INode::NodeType::Map) {
         _writer.StartObject();
         auto test_vec = _node_sp->BulkGetAll();

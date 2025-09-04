@@ -15,7 +15,7 @@ XNode::XNode(std::unique_ptr<IContainerMatch>&&  _container_match,
              std::unique_ptr<IParentValidator>&& _parent_validator,
              uint64_t                            _uid,
              std::string_view                    _name)
-    : object_uid_(_uid),
+    : object_uid_(_uid == xbase::kInvalidUid ? xbase::NextUid() : _uid),
       container_match_p_(std::move(_container_match)),
       parent_validator_p_(std::move(_parent_validator))
 {

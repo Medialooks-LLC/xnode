@@ -284,9 +284,9 @@ public:
     /// @brief Retrieves a XENUM from this XValue.
     /// @tparam TObject The object type.
     template <typename TEnum>
-    [[nodiscard]] std::optional<TEnum> EnumGet() const
+    [[nodiscard]] std::optional<TEnum> EnumGet(const std::optional<TEnum> _default = {}) const
     {
-        return xenum::FromString<TEnum>(String());
+        return xenum::FromString<TEnum>(String(), _default);
     }
 
     /// @brief Retrieves a XENUM from this XValue, std::nullopt if not suitable for enum
@@ -299,37 +299,38 @@ public:
     /// @brief Retrieves a specicified optional type from this XValue, if value not suitable, returned
     /// std::nullopt
     template <typename TGet>
-    [[nodiscard]] std::optional<TGet> OptionalGet() const;
+    [[nodiscard]] std::optional<TGet> OptionalGet(const std::optional<TGet> _default = {}) const;
 };
 
 template <>
-std::optional<bool> XValue::OptionalGet<bool>() const;
+std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const;
 
 template <>
-std::optional<double> XValue::OptionalGet<double>() const;
+std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _default) const;
 
 template <>
-std::optional<int64_t> XValue::OptionalGet<int64_t>() const;
+std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const;
 
 template <>
-std::optional<uint64_t> XValue::OptionalGet<uint64_t>() const;
+std::optional<uint64_t> XValue::OptionalGet<uint64_t>(const std::optional<uint64_t> _default) const;
 
 template <>
-std::optional<int32_t> XValue::OptionalGet<int32_t>() const;
+std::optional<int32_t> XValue::OptionalGet<int32_t>(const std::optional<int32_t> _default) const;
 
 template <>
-std::optional<uint32_t> XValue::OptionalGet<uint32_t>() const;
+std::optional<uint32_t> XValue::OptionalGet<uint32_t>(const std::optional<uint32_t> _default) const;
 
 template <>
-std::optional<int16_t> XValue::OptionalGet<int16_t>() const;
+std::optional<int16_t> XValue::OptionalGet<int16_t>(const std::optional<int16_t> _default) const;
 
 template <>
-std::optional<uint16_t> XValue::OptionalGet<uint16_t>() const;
+std::optional<uint16_t> XValue::OptionalGet<uint16_t>(const std::optional<uint16_t> _default) const;
 
 template <>
-std::optional<std::string_view> XValue::OptionalGet<std::string_view>() const;
+std::optional<std::string_view> XValue::OptionalGet<std::string_view>(
+    const std::optional<std::string_view> _default) const;
 
 template <>
-std::optional<std::string> XValue::OptionalGet<std::string>() const;
+std::optional<std::string> XValue::OptionalGet<std::string>(const std::optional<std::string> _default) const;
 
 } // namespace xsdk

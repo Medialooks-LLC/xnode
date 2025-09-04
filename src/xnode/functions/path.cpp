@@ -36,7 +36,7 @@ INode::SPtrC xnode::NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path)
 
 INode::SPtrC xnode::NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _to)
 {
-    if (!_from || !_to)
+    if (!_from || !_to || _from == _to)
         return _from ? _from : _to;
 
     auto dest_node = xnode::Clone(_to, true);

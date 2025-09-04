@@ -105,6 +105,11 @@ public:
     inline static XKey empty_key;
 
     /**
+     * @brief access to undelying std::vector object for enumerate parts.
+     */
+    const std::deque<XKey>& Parts() const { return path_; }
+
+    /**
      * @brief Returns a reference to the first XKey in the XPath container.
      * @return Reference to the first XKey in the container if it is not empty, otherwise the empty_key.
      */
@@ -152,6 +157,18 @@ public:
      * @param The XKey which will be inserted.
      */
     void PushFront(const XKey& _key) { path_.push_front(_key); }
+
+    /**
+     * @brief Prepends the given XKey to the end of the XPath container.
+     * @param The XKey which will be inserted.
+     */
+    void PushBack(XKey&& _key) { path_.push_back(std::move(_key)); }
+
+    /**
+     * @brief Prepends the given XKey to the end of the XPath container.
+     * @param The XKey which will be inserted.
+     */
+    void PushBack(const XKey& _key) { path_.push_back(_key); }
 
     /**
      * @brief For allow to have flat nodes, string access to node

@@ -335,102 +335,103 @@ IObject::SPtrC XValue::ObjectPtrC(const IObject::SPtrC& _default) const
 }
 
 template <>
-std::optional<bool> XValue::OptionalGet<bool>() const
+std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const
 {
     if (IsNumberConvertable())
         return Uint64();
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<float> XValue::OptionalGet<float>() const
+std::optional<float> XValue::OptionalGet<float>(const std::optional<float> _default) const
 {
     if (IsNumberConvertable())
         return static_cast<float>(Double());
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<double> XValue::OptionalGet<double>() const
+std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _default) const
 {
     if (IsNumberConvertable())
         return Double();
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<int64_t> XValue::OptionalGet<int64_t>() const
+std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const
 {
     if (IsNumberConvertable())
         return Int64();
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<uint64_t> XValue::OptionalGet<uint64_t>() const
+std::optional<uint64_t> XValue::OptionalGet<uint64_t>(const std::optional<uint64_t> _default) const
 {
     if (IsNumberConvertable())
         return Uint64();
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<int32_t> XValue::OptionalGet<int32_t>() const
+std::optional<int32_t> XValue::OptionalGet<int32_t>(const std::optional<int32_t> _default) const
 {
     if (IsNumberConvertable())
         return xbase::Clamp<int32_t>(Int64());
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<uint32_t> XValue::OptionalGet<uint32_t>() const
+std::optional<uint32_t> XValue::OptionalGet<uint32_t>(const std::optional<uint32_t> _default) const
 {
     if (IsNumberConvertable())
         return xbase::Clamp<uint32_t>(Uint64());
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<int16_t> XValue::OptionalGet<int16_t>() const
+std::optional<int16_t> XValue::OptionalGet<int16_t>(const std::optional<int16_t> _default) const
 {
     if (IsNumberConvertable())
         return xbase::Clamp<int16_t>(Int64());
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<uint16_t> XValue::OptionalGet<uint16_t>() const
+std::optional<uint16_t> XValue::OptionalGet<uint16_t>(const std::optional<uint16_t> _default) const
 {
     if (IsNumberConvertable())
         return xbase::Clamp<uint16_t>(Uint64());
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<std::string> XValue::OptionalGet<std::string>() const
+std::optional<std::string> XValue::OptionalGet<std::string>(const std::optional<std::string> _default) const
 {
     if (Type() == XValue::kString)
         return String();
 
-    return std::nullopt;
+    return _default;
 }
 
 template <>
-std::optional<std::string_view> XValue::OptionalGet<std::string_view>() const
+std::optional<std::string_view> XValue::OptionalGet<std::string_view>(
+    const std::optional<std::string_view> _default) const
 {
     if (Type() == XValue::kString)
         return StringView();
 
-    return std::nullopt;
+    return _default;
 }
 
 } // namespace xsdk
