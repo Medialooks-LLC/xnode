@@ -40,7 +40,7 @@ INode::SPtrC xnode::NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _t
         return _from ? _from : _to;
 
     auto dest_node = xnode::Clone(_to, true);
-    xnode::CopyTo(_from, dest_node, true);
+    xnode::PatchApply(dest_node, _from);
     return dest_node;
 }
 

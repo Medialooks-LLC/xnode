@@ -145,6 +145,7 @@ void WriteXValue(TWriter&& _writer, const XValueRT& _value_at, const xnode::Json
             }
             else {
                 // TODO: Serialize custom object (e.g. via lambda ?)
+                _writer.String("[custom object]");
             }
         } break;
 

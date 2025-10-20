@@ -229,7 +229,7 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
 
 /**
  * @brief Merge content of two nodes, if one is empty -> return non empty one,
- * if two is non empty, the resulting content is CopyTo(_from, _to, with override)
+ * if two is non empty, the resulting content is PatchApply(_to, _from)
  * @param _from first INode const instance to for merge.
  * @param _to second INode const instance to for merge.
  * @return An INode::SPtrC merged instance of two nodes
@@ -435,6 +435,31 @@ XValue ArrayNodesUnwrap(XValue&& _array_val);
  * @return The XKey corresponding to _value or empty if the conversion fails.
  */
 [[nodiscard]] XKey KeyFromValue(const XValue& _value);
+
+/// @brief Retrieves a shared_ptr of a TObject from this XValue.
+/// @tparam TObject The object type.
+template <typename TObject>
+[[nodiscard]] std::shared_ptr<TObject> ObjectAt(const INode::SPtr&              _node_this,
+                                                XPath&&                         _path,
+                                                const std::shared_ptr<TObject>& _default = {})
+{
+    return xnode::At(_node_this, std::move(_path)).QueryPtr(_default);
+}
+
+/// @brief Retrieves a shared_ptr of a const TObject from this XValue.
+/// @tparam TObject The object type.
+template <typename TObject>
+[[nodiscard]] std::shared_ptr<const TObject> ConstObjectAt(const INode::SPtrC&                   _node_this,
+                                                           XPath&&                               _path,
+                                                           const std::shared_ptr<const TObject>& _default = {})
+{
+    auto value = xnode::At(_node_this, std::move(_path));
+    auto check_non_const = value.QueryPtr<TObject>();
+    if (check_non_const)
+        return check_non_const;
+
+    return value.QueryPtrC(_default);
+}
 
 } // namespace xsdk::xnode
 

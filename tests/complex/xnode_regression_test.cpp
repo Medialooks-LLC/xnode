@@ -42,4 +42,24 @@ TEST(xnode_regression_tests, map_set_to_exists_key)
     EXPECT_EQ("some_value", child2_res->At(xnode::kIdxBegin).String());
 }
 
+#ifndef _DEBUG
+TEST(xnode_regression_tests, node_parent_circular_set_memleak_in_cb)
+{
+    auto node_map_sp  = xnode::Create(INode::NodeType::Map, "root");
+    auto node_map_sp2 = xnode::CreateMap({{"name2", "02"}}, "02");
+
+    auto [ok, prev] = node_map_sp2->ParentSet(node_map_sp);
+    EXPECT_TRUE(ok);
+
+    node_map_sp2->Set("place_for_node", 123);
+    node_map_sp2->ForEach([&](const auto& key, auto& val) {
+        if (key == XKey("place_for_node")) {
+            val = XValue(node_map_sp);
+            return xnode::OnEachRes::Stop;
+        }
+        return xnode::OnEachRes::Next;
+    });
+}
+#endif
+
 // NOLINTEND(*)

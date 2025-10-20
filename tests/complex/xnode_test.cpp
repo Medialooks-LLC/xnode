@@ -1011,11 +1011,12 @@ TEST(xnode_tests, node_parent_circular_set)
         EXPECT_FALSE(node_map_sp->ParentGet());
 
         // check cb
+
         node_map_sp2->Set("place_for_node", 123);
         node_map_sp2->ForEach([&](const auto& key, auto& val) {
             if (key == XKey("place_for_node")) {
                 val = XValue(node_map_sp);
-                return xnode::OnEachRes::Stop;
+                return xnode::OnEachRes::EraseStop;
             }
             return xnode::OnEachRes::Next;
         });
