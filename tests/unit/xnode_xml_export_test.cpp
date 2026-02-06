@@ -382,4 +382,60 @@ TEST(xnode_xml_export_unit_tests, check_double_conversion_with_unicode)
 
     EXPECT_EQ(ref, res);
 }
+
+TEST(xnode_xml_export_unit_tests, ndi_xml_check)
+{
+    auto node = xnode::CreateComplex({{"smpte", "01:00:23:12"}}, "ndi_timecode");
+    ASSERT_TRUE(node);
+
+    auto xml = xnode::ToXml(node, {}, xnode::XmlFormat::kNoXmlDeclaration);
+
+    auto ref = R"(<ndi_timecode><smpte>01:00:23:12</smpte></ndi_timecode>)";
+
+    EXPECT_EQ(ref, xml);
+
+    xnode::EmplaceToArray(node, "smpte", "02:00:23:12");
+    xml = xnode::ToXml(node, {}, xnode::XmlFormat::kNoXmlDeclaration);
+
+    ref = R"(<ndi_timecode><smpte>01:00:23:12</smpte><smpte>02:00:23:12</smpte></ndi_timecode>)";
+
+    EXPECT_EQ(ref, xml);
+
+    auto [check_node, err] = xnode::FromXml(xml);
+    EXPECT_EQ(err, 0);
+    ASSERT_TRUE(check_node);
+    auto check_json = xnode::ToJson(check_node);
+
+    EXPECT_EQ(node->NameGet(), check_node->NameGet());
+    EXPECT_EQ(xnode::Compare(node, check_node, true), 0);
+}
+
+TEST(xnode_xml_export_unit_tests, ndi_xml_check_fail)
+{
+    auto node = xnode::CreateComplex({{"smpte", "01:00:23:12"}}, "ndi_timecode");
+    ASSERT_TRUE(node);
+#ifdef _DEBUG
+    auto node_json = xnode::ToJson(node);
+#endif
+
+    auto xml = xnode::ToXml(node, {}, xnode::XmlFormat::kNoXmlDeclaration);
+
+    auto ref = R"(<ndi_timecode><smpte>01:00:23:12</smpte></ndi_timecode>)";
+
+    EXPECT_EQ(ref, xml);
+
+    auto [check_node, err] = xnode::FromXml(xml);
+    EXPECT_EQ(err, 0);
+    ASSERT_TRUE(check_node);
+    auto check_json = xnode::ToJson(check_node);
+    auto xml2       = xnode::ToXml(check_node, {}, xnode::XmlFormat::kNoXmlDeclaration);
+    EXPECT_EQ(ref, xml2);
+
+    EXPECT_EQ(node->NameGet(), check_node->NameGet());
+    EXPECT_EQ(xnode::Compare(node, check_node, true), 0) << "\nbase:\n"
+                                                         << xnode::ToJson(node) << std::endl
+                                                         << "\ncheck:\n"
+                                                         << check_json;
+}
+
 // NOLINTEND(*)

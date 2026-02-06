@@ -567,11 +567,12 @@ TEST(xnode_utests, create_or_clone)
     EXPECT_TRUE(check_arr3->Empty());
 }
 
-TEST(xnode_utests, empty_string) {
+TEST(xnode_utests, empty_string)
+{
 
     auto map_node = xnode::CreateMap();
     ASSERT_TRUE(map_node);
-    auto [ok,prev] = map_node->Set("empty_string", "");
+    auto [ok, prev] = map_node->Set("empty_string", "");
     ASSERT_TRUE(ok);
     ASSERT_TRUE(!prev);
     EXPECT_EQ(map_node->Size(), 1);
@@ -586,4 +587,37 @@ TEST(xnode_utests, empty_string) {
     EXPECT_EQ(map_node->Size(), 0);
 }
 
+TEST(xnode_utests, xnode_at_test)
+{
+
+    auto node_1 = xnode::CreateComplex({{XPath {"top_node", "node_val"}, 101},
+                                        {XPath {"top_node", "node_val_1"}, 102},
+                                        {XPath {"top_val"}, 10},
+                                        {XPath {"top_val_1"}, 11}});
+
+    auto node_2 = xnode::CreateComplex({{XPath {"top_node", "node_val"}, 201},
+                                        {XPath {"top_node", "node_val_2"}, 202},
+                                        {XPath {"top_node_2", "node_val_2"}, 203},
+                                        {XPath {"top_val"}, 20},
+                                        {XPath {"top_val_2"}, 21}});
+
+    EXPECT_EQ(xnode::At(node_1, {"top_node", "node_val"}).Uint32(), 101);
+    EXPECT_EQ(xnode::At(node_1, {"top_node", "node_val_1"}).Uint32(), 102);
+    EXPECT_EQ(xnode::At(node_1, "top_val").Uint32(), 10);
+
+    EXPECT_TRUE(xnode::At(node_1, {"top_node", "node_val_1"}));
+    EXPECT_FALSE(xnode::At(node_1, {"top_node", "node_val_2"}));
+
+    EXPECT_EQ(xnode::At({node_1, node_2}, {"top_node", "node_val"}).Uint32(), 101);
+    EXPECT_EQ(xnode::At({node_2, node_1}, {"top_node", "node_val"}).Uint32(), 201);
+
+    EXPECT_EQ(xnode::At({node_1, node_2}, {"top_node", "node_val_2"}).Uint32(), 202);
+    EXPECT_EQ(xnode::At({node_2, node_1}, {"top_node", "node_val_2"}).Uint32(), 202);
+
+    EXPECT_EQ(xnode::At({node_1, node_2}, "top_val").Uint32(), 10);
+    EXPECT_EQ(xnode::At({node_2, node_1}, "top_val").Uint32(), 20);
+
+    EXPECT_EQ(xnode::At({node_1, node_2}, "top_val_1").Uint32(), 11);
+    EXPECT_EQ(xnode::At({node_2, node_1}, "top_val_1").Uint32(), 11);
+}
 // NOLINTEND(*)

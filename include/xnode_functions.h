@@ -31,6 +31,16 @@ namespace xsdk::xnode {
  */
 [[nodiscard]] INode::SPtr CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _type, std::string_view _name = {});
 /**
+ * @brief Check existed value for node wuth specified type, if not suitable, creates an XNode of the given type
+ *
+ * @param _try_node Node for check
+ * @param _type Node type to create
+ * @param _name Optional name for the node
+ *
+ * @return std::shared_ptr to the newly created XNode
+ */
+[[nodiscard]] INode::SPtr CreateOrUse(const XValue& _try_value, INode::NodeType _type, std::string_view _name = {});
+/**
  * @brief Check existed node for specified type, if not suitable, creates an XNode of the given type, if so, clone
  * existed node
  *
@@ -117,6 +127,11 @@ enum class XNodeType {
     uint64_t                                                                     _cloned_uid  = 0);
 
 /**
+ * @brief Return the size of node or 0 for nullptr
+ */
+inline size_t NodeSize(const INode* _node_this) { return _node_this ? _node_this->Size() : 0; }
+
+/**
  * @brief Inserts a new node into an existing node.
  * @param _node_this The existing node.
  * @param _node_insert The node to be inserted.
@@ -157,6 +172,14 @@ INode::InsertRes NodeConstInsert(const INode::SPtr&  _node_this,
  * @return A pointer to the constant node if it exists, otherwise null.
  */
 [[nodiscard]] INode::SPtrC NodeConstGetByKey(const INode::SPtrC& _node_this, const XKey& _key);
+
+/**
+ * @brief Get a node path to specified root .
+ * @param _node_this The node to search in.
+ * @param _root_p The last node.
+ * @return A pair of node path and root node.
+ */
+[[nodiscard]] std::pair<XPath, INode::SPtrC> NodePath(const INode* _node_this_p, const INode* _root_p = nullptr);
 
 /**
  * @brief Compares two nodes based on their content and structure.
@@ -205,6 +228,51 @@ size_t CopyTo(const INode::SPtrC& _source,
               bool                _nodes_as_refs = false,
               const size_t        _depth         = -1);
 
+/**
+ * @brief Flags controlling the behavior of node copying and value assignment operations.
+ *
+ * These flags determine how a destination node is handled during copy or merge operations,
+ * such as whether to create a new node, override existing values, or both.
+ *
+ * @note This enum is designed to be used as a bitmask. Combine flags using the bitwise OR operator (`|`).
+ */
+enum class CopyToFlags { kNone, kOverride = 1, kCreateNew = 2, kCreateOverrideAll = kOverride | kCreateNew };
+
+XENUM_OPS32(CopyToFlags)
+/**
+ * @brief Performs a flexible deep-copy or merge operation of multiple key-value pairs into a destination node.
+ *
+ * This function applies a series of (XPath, XValue) assignments to a destination node, optionally creating
+ * or overriding the destination node itself based on the provided flags. It supports both insertion and
+ * overriding of values within the destination node, and can handle cases where the destination is initially
+ * empty or points to a const node.
+ *
+ * @param _values A vector of key-value pairs, where each key is an XPath specifying the target location
+ *                within the destination node, and each value is the data to be placed at that location.
+ *                The vector is moved into the function to avoid unnecessary copying.
+ * @param _dest_value The destination value, which may or may not already contain a valid node. If it does not,
+ *                    the behavior depends on the copy flags (e.g., node creation may be attempted).
+ * @param _copy_flags A bitmask of CopyToFlags that controls the behavior of the copy operation, such as
+ *                    whether to create a new node, override existing values, or rename the destination node.
+ * @param _default_new_node_name The name to assign to a newly created destination node if one must be
+ *                               instantiated. If empty and a new node is needed, a default name may be used.
+ *
+ * @return A std::pair containing:
+ *         - The resulting destination node (either the original, a cloned version, or a newly created one).
+ *         - The number of successfully applied assignments from @_values.
+ *
+ * @note If kCreateNew is not set in @_copy_flags and @_dest_value does not contain a valid node,
+ *       the function returns an empty pair ({}, 0).
+ * @note If kOverride is not set and a target path already exists in the destination node,
+ *       the corresponding value will not be overwritten.
+ * @note If the destination value points to a const node and node creation is allowed, a mutable clone
+ *       of the const node is created and used as the destination.
+ */
+std::pair<INode::SPtr, size_t> ComplexCopyTo(std::vector<std::pair<XPath, XValue>>&& _values,
+                                             XValue&&                                _dest_value,
+                                             const CopyToFlags                       _copy_flags,
+                                             const std::string_view                  _default_new_node_name = {});
+
 // XPath (heierachic modes support)
 // todo: compare performance with simple keys
 /**
@@ -215,10 +283,23 @@ size_t CopyTo(const INode::SPtrC& _source,
  * @param _convert_to_type Optional flag indicating if the target node should be converted to the given node type.
  * @return An INode::SPtr instance to the target node.
  */
-INode::SPtr NodeGet(const INode::SPtr&             _node_this,
-                    XPath&&                        _path,
-                    std::optional<INode::NodeType> _node_type       = std::nullopt,
-                    bool                           _convert_to_type = false);
+INode::SPtr NodeGet(const INode::SPtr&                   _node_this,
+                    XPath&&                              _path,
+                    const std::optional<INode::NodeType> _node_type       = std::nullopt,
+                    const bool                           _convert_to_type = false);
+
+/**
+ * @brief Recursively retrieves an INode instance using the given XPath and optional node type.
+ * @param _node_value XValue with INode instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @param _node_type Optional node type to convert the target node to.
+ * @param _convert_to_type Optional flag indicating if the target node should be converted to the given node type.
+ * @return An INode::SPtr instance to the target node.
+ */
+INode::SPtr NodeGetV(const XValue&                        _node_value,
+                     XPath&&                              _path            = {},
+                     const std::optional<INode::NodeType> _node_type       = std::nullopt,
+                     const bool                           _convert_to_type = false);
 /**
  * @brief Const version of NodeGet function for reading purposes only.
  * @param _node_this INode const instance to start traversing from.
@@ -226,6 +307,13 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
  * @return An INode::SPtrC instance to the target node.
  */
 [[nodiscard]] INode::SPtrC NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path);
+/**
+ * @brief Const version of NodeGet function for reading purposes only.
+ * @param _node_value XValue with INode const instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @return An INode::SPtrC instance to the target node.
+ */
+[[nodiscard]] INode::SPtrC NodeConstGetV(const XValue& _node_value, XPath&& _path);
 
 /**
  * @brief Merge content of two nodes, if one is empty -> return non empty one,
@@ -237,6 +325,20 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
 [[nodiscard]] INode::SPtrC NodesMerge(const INode::SPtrC& _from, const INode::SPtrC& _to);
 
 /**
+ * @brief Patch content of two values:
+ * - if both is nodes -> the same as PatchApply(_dest, _patch) (as in NodesMerge)
+ * - if _patch is ValueType::kNull -> the resulting is empty value
+ * - returned _patch value
+
+ * @param _to destination XValue const instance for merge.
+ * @param _to second XValue const instance for merge.
+ * @param _modify_dest_node if is true, than PatchApply() called on dest node,
+ *        if false -> on cloned node (_dest not modified)
+ * @return An patched XValue
+ */
+[[nodiscard]] XValue ValuePatch(const XValue& _patch, const XValue& _dest, const bool _modify_dest_node);
+
+/**
  * @brief Retrieves the size of map/array at the specified XPath or std::nullopt if the path does not exist or dest is
  * not map/array, if path empty -> Size() for _node_this
  * @param _node_this INode instance to start traversing from.
@@ -245,6 +347,42 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
  * not map/array
  */
 [[nodiscard]] std::optional<size_t> NodeSize(const INode::SPtrC& _node_this, XPath&& _path = {});
+
+/**
+ * @brief Recursively iterates over all key-value entries in a node tree, invoking a user-provided callback for each.
+ *
+ * This function performs a depth-first traversal of the node hierarchy starting from the given node.
+ * For each key-value pair encountered, it constructs the full XPath to that item and calls the provided
+ * callback function `_on_each_item`. If the value is itself a node, the function recurses into it.
+ *
+ * @param _node_value      A shared pointer to the current node to iterate over. If null, the function returns 0.
+ * @param _on_each_item   A callback function that is invoked for each key-value pair in the tree.
+ *                        It receives the full XPath to the item and a reference to its value.
+ *                        If the callback returns `false`, iteration stops for that branch;
+ *                        if it returns `true`, the current item is counted and traversal continues.
+ * @param _node_path      The base XPath prefix representing the path to the current node.
+ *                        This path is extended with each key during traversal.
+ *
+ * @return The total number of items for which the callback returned `true`.
+ *
+ * @note The traversal is recursive and supports nested node structures of arbitrary depth.
+ * @note The `_on_each_item` callback must be non-throwing to ensure predictable behavior.
+ */
+size_t NodeIterate(const XValue&                                             _node_value,
+                   const std::function<bool(const XPath&, const XValueRT&)>& _on_each_item,
+                   const XPath&                                              _node_path = {});
+
+/**
+ * @brief Recursively iterates over all key-value entries in a node tree, and return only elements modified after
+ * specified time.
+ *
+ * @param _value      A shared pointer to the value (also with node) to iterate over. If null, the function returns 0.
+ * @param _after_timestamp   Ignore elements chnaged before or equal specified timestamps
+ * @return The modified values (null mean removed) with max (most recent) modification time or empty (if no changes)
+ *
+ * @note The traversal is recursive and supports nested node structures .
+ */
+XValueRT ChangesAfterTime(const XValueRT& _value, const xbase::Time64 _after_timestamp, const bool _unwrap_const_nodes);
 
 /**
  * @brief Retrieves the XValueRT at the specified XPath or null if the path does not exist.
@@ -261,6 +399,21 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
  */
 [[nodiscard]] XValueRT At(const INode::SPtrC& _node_this, XPath&& _path);
 /**
+ * @brief Try retrieve the XValueRT at the specified XPath from vector of nodes
+ * - try each node one after one, while not found desired value.
+ * @param _check_nodes vector of INode const instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @return An XValueRT instance containing the target node's value or null if the path does not exist.
+ */
+[[nodiscard]] XValueRT At(const std::vector<INode::SPtrC>& _check_nodes, const XPath& _path);
+/**
+ * @brief Retrieves the XValueRT at the specified XPath or null if the path does not exist.
+ * @param _node_value XValue with INode const instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @return An XValueRT instance containing the target node's value or null if the path does not exist.
+ */
+[[nodiscard]] XValueRT At(const XValue& _node_value, XPath&& _path);
+/**
  * @brief Sets the value of a node at the specified XPath.
  * @param _node_this INode instance to start traversing from.
  * @param _path XPath to traverse to the target node.
@@ -268,6 +421,46 @@ INode::SPtr NodeGet(const INode::SPtr&             _node_this,
  * @return A pair of a boolean indicating success and the value of the target element before setting it.
  */
 std::pair<bool, XValueRT> Set(const INode::SPtr& _node_this, XPath&& _path, XValue&& _val);
+
+/**
+ * @brief Optional sets the value of a node at the specified XPath.
+ * @param _node_this INode instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @param _val Value to set the target node to.
+ * @return A pair of a boolean indicating success and the value of the target element before setting it.
+ */
+template <class T>
+std::pair<bool, XValueRT> OptionalSet(const INode::SPtr& _node_this, XPath&& _path, const std::optional<T> _val)
+{
+    if (!_val.has_value())
+        return {false, xnode::At(_node_this, std::move(_path))};
+
+    return xnode::Set(_node_this, std::move(_path), _val.value());
+}
+
+/**
+ * @brief Sets the value of a node at the specified XPath.
+ * @param _node_value XValue with INode instance to set.
+ * @param _path XPath to traverse to the target node.
+ * @param _val Value to set the target node to.
+ * @return A success flag and the value of the target element before setting it.
+ */
+std::pair<bool, XValueRT> NodeSet(XValueRT& _node_value, XPath&& _path, XValue&& _val);
+/**
+ * @brief Optioanl sets the value of a node at the specified XPath.
+ * @param _node_value XValue with INode instance to set
+ * @param _path XPath to traverse to the target node.
+ * @param _val Value to set the target node to.
+ * @return A success flag and the value of the target element before setting it.
+ */
+template <class T>
+std::pair<bool, XValueRT> NodeOptionalSet(XValueRT& _node_value, XPath&& _path, const std::optional<T> _val)
+{
+    if (!_val.has_value())
+        return {false, xnode::At(_node_value, std::move(_path))};
+
+    return xnode::NodeSet(_node_value, std::move(_path), _val.value());
+}
 
 /**
  * @brief Create new node with base values and appended new value
@@ -323,9 +516,12 @@ size_t EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path, XValue
  * @note If element value is not an array node, it will be returned as a vector with one value.
  * @param _node_this INode instance to start traversing from.
  * @param _path The XPath to navigate through.
+ * @param _only_for_type The return values only from Array or Map
  * @return A vector containing all values of the element by the specified XPath.
  */
-[[nodiscard]] std::vector<XValueRT> ValuesList(const INode::SPtrC& _node_this, XPath&& _path);
+[[nodiscard]] std::vector<XValueRT> ValuesList(const XValue&                        _target_value,
+                                               XPath&&                              _path,
+                                               const std::optional<INode::NodeType> _only_for_type = {});
 
 /**
  * @brief Retrieves the nodes at the given XPath.
@@ -453,7 +649,7 @@ template <typename TObject>
                                                            XPath&&                               _path,
                                                            const std::shared_ptr<const TObject>& _default = {})
 {
-    auto value = xnode::At(_node_this, std::move(_path));
+    auto value           = xnode::At(_node_this, std::move(_path));
     auto check_non_const = value.QueryPtr<TObject>();
     if (check_non_const)
         return check_non_const;

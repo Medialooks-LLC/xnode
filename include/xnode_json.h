@@ -11,20 +11,6 @@ namespace xsdk::xnode {
 ///@name JSON functions
 /// Return resulting value
 ///@{
-/**
- * @brief Parses the given JSON string and returns an INode pointer and the error position if any.
- *
- * @param _json The JSON string to be parsed.
- * @param _name The name to be given to the resulting node.
- * @param _uid  The unique identifier for the resulting node.
- *
- * @return A std::pair consisting of an INode pointer and the error position if any.
- *
- * @note A zero error position means that the import from JSON was successful.
- */
-std::pair<INode::SPtr, size_t> FromJson(const std::string_view _json,
-                                        const std::string_view _name = {},
-                                        const uint64_t         _uid  = 0);
 
 /**
  * @brief Enum class representing different JSON format options.
@@ -42,29 +28,74 @@ enum class JsonFormat {
 };
 
 /**
- * @brief A type alias for a callable object with the following signature:
+ * @brief A type alias for a handle custom objects during INode json serialization with folowing signature, return
+ * XValue (could be INode inside)
  * @code
- * OnCopyRes onCopyFunc(const INode::SPtrC& _node_to_copy_from, const XKey& _key, XValueRT& _value)
+ * OnCustomObjectPf = std::function<XValue(const XKey& _key, const IObject* _custom_object)>;
  * @endcode
  */
-using OnCopyPF = const std::function<OnCopyRes(const INode::SPtrC&, const XKey&, XValueRT&)>;
+using OnCustomSerializePf = std::function<XValue(const XKey& _key, const IObject* _custom_object)>;
 /**
  * @brief Function to convert an INode object to json format string.
  *
- * @param _node_this          The INode object to be converted to json format.
- * @param _pf_on_item         Function pointer to handle copying of values when recursively traversing the tree.
- * <STRONG>(Currently not imlemented)</STRONG>
+ * @param _root_value         The XValue object to be converted to json format.
+ * @param _pf_on_custom        Function pointer to handle custom object serialization.
+ * @param _json_format        The desired json format. @see JsonFormat.
+ * @param _indent_char_count  Number of characters for indentation <EM> (skipped for one line format)</EM>.
+ * @param _indent_char        Character used for indentation <EM> (skipped for one line format)</EM>.
+ *
+ * @return Returns a IBuffer::Type::StringView buffer containing the json format representation of the INode object.
+ */
+xbase::IBuffer::SPtrC ToJsonBuffer(const XValue&              _root_value,
+                                   const OnCustomSerializePf& _pf_on_custom      = {},
+                                   const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
+                                   const size_t               _indent_char_count = kExportIndentCount,
+                                   const char                 _indent_char       = kExportIndentChar);
+/**
+ * @brief Function to convert an INode object to json format string.
+ *
+ * @param _root_value          The root INode object to be converted to json format.
+ * @param _pf_on_custom        Function pointer to handle custom object serialization.
  * @param _json_format        The desired json format. @see JsonFormat.
  * @param _indent_char_count  Number of characters for indentation <EM> (skipped for one line format)</EM>.
  * @param _indent_char        Character used for indentation <EM> (skipped for one line format)</EM>.
  *
  * @return Returns a std::string containing the json format representation of the INode object.
  */
-std::string ToJson(const INode::SPtrC& _node_this,
-                   const OnCopyPF&     _pf_on_item        = {},
-                   const JsonFormat    _json_format       = JsonFormat::kOneLineArrays,
-                   const size_t        _indent_char_count = kExportIndentCount,
-                   const char          _indent_char       = kExportIndentChar);
+std::string ToJson(const XValue&              _root_value,
+                   const OnCustomSerializePf& _pf_on_custom      = {},
+                   const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
+                   const size_t               _indent_char_count = kExportIndentCount,
+                   const char                 _indent_char       = kExportIndentChar);
+
+/**
+ * @brief A type alias for a handle custom objects during INode json deserialization with folowing signature, return
+ * XValue (usually with IObject inherited object inside)
+ * Called for values depends from types mask, for nodes called then deserializarion finished
+ * @code
+ * OnCustomDeserializePf = std::function<XValue(const XKey& _key, const IObject* _custom_object)>;
+ * @endcode
+ */
+using OnCustomDeserializePf = std::function<XValue(const XKey& _key, const XValue& _read_value)>;
+
+/**
+ * @brief Parses the given JSON string and returns an INode pointer and the error position if any.
+ *
+ * @param _json The JSON string to be parsed.
+ * @param _name The name to be given to the resulting node.
+ * @param _on_custom_deserialize The callback for custom objects (e.g. IMediaPacket etc.) deserialization.
+ * @param _callback_types_mask mask for types for which deserialize callback should be called.
+ * @param _node_uid  The unique identifier for the resulting node.
+ *
+ * @return A std::pair consisting of an INode pointer and the error position if any.
+ *
+ * @note A zero error position means that the import from JSON was successful.
+ */
+std::pair<INode::SPtr, size_t> FromJson(const std::string_view                 _json,
+                                        const std::string_view                 _name                  = {},
+                                        const OnCustomDeserializePf&           _on_custom_deserialize = {},
+                                        const std::optional<XValue::ValueType> _callback_types_mask   = {},
+                                        const std::optional<xbase::Uid>        _node_uid              = {});
 
 ///@}
 

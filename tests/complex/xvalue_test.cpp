@@ -138,12 +138,22 @@ TEST(xvalue_tests, construct)
         EXPECT_TRUE(xTest.IsEmpty());
     }
     {
-        double dblFake;
-        XValue xTest(&dblFake);
+        IObject* fake_p = nullptr;
+        XValue   xTest(fake_p);
         EXPECT_EQ(xTest.Type(), XValue::kNull);
         EXPECT_TRUE(xTest);
         EXPECT_TRUE(xTest.IsEmpty());
     }
+    {
+        auto spObj  = xobject::CreateShared();
+
+        XValue xTest(spObj.get());
+        EXPECT_EQ(xTest.Type(), XValue::kObject);
+        EXPECT_TRUE(xTest);
+        EXPECT_FALSE(xTest.IsEmpty());
+        EXPECT_EQ(xTest.QueryPtr<IObject>(), spObj);
+    }
+    
 
     {
         XValue xTest(true);

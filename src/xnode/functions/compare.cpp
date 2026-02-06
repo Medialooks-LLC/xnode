@@ -35,13 +35,16 @@ int32_t xnode::Compare(
             return OnCopyRes::Skip;
         }
 
-        if (key_left > it_right->first) {
+        while (it_right != values_right.end() && key_left > it_right->first) {
             if (!_pf_on_different || _pf_on_different(_node_left, it_right->first, XValue(), it_right->second)) {
                 compare_res = -1;
                 return OnCopyRes::Stop;
             }
+
+            ++it_right;
         }
-        else if (val_left != it_right->second) {
+
+        if (val_left != it_right->second) {
             assert(key_left == it_right->first);
             auto val_compare = val_left.Compare(it_right->second);
             if (val_compare != 0) {
@@ -66,8 +69,12 @@ int32_t xnode::Compare(
     if (compare_res != 0)
         return compare_res;
 
-    if (it_right != values_right.end())
-        return -1;
+    while (it_right != values_right.end()) {
+        if (!_pf_on_different || _pf_on_different(_node_left, it_right->first, XValue(), it_right->second))
+            return -1;
+       
+        ++it_right;
+    }
 
     for (const auto& [node_left, node_right] : compare_nodes) {
         compare_res = xnode::Compare(node_left, node_right, true, _pf_on_different);

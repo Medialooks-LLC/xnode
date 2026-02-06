@@ -33,6 +33,7 @@ private:
     std::string_view CutPrefix_(const XKey& _key) const;
 
     static std::string GetNameForUnnamedNode_();
+    size_t             CheckCleanNodeSize_(const INode::SPtrC& _node) const;
 };
 
 } // namespace xsdk::impl

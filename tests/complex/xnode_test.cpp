@@ -1103,4 +1103,73 @@ TEST(xnode_tests, wrapped_tests)
     }
 }
 
+TEST(xnode_tests, changed_after_time)
+{
+
+    auto start_at = XValueRT::ClockTimestamp();
+
+    auto test_node = xnode::CreateComplex(
+        {{"first", 123}, {"first_0", 345}, {"node1::first_1", 456}, {"node1::subnode2::first_2", 567}});
+
+    auto created_at = XValueRT::ClockTimestamp();
+
+    xnode::Set(test_node, "node1::second", 11);
+    xnode::Set(test_node, "node2::second_1", 22);
+    xnode::Erase(test_node, "node1::subnode2::first_2");
+    xnode::Set(test_node, "second_2", 33);
+    xnode::Set(test_node, "first", 123); // Same
+
+    auto set_at = XValueRT::ClockTimestamp();
+
+    xnode::Set(test_node, "node1::second", 22);
+    xnode::Set(test_node, "node2::second_2", 22);
+    xnode::Set(test_node, "second_2", 33);
+    xnode::Set(test_node, "first", 123);
+    xnode::Set(test_node, "third", 99);
+    xnode::Erase(test_node, "first_0");
+
+    auto finished_at = XValueRT::ClockTimestamp();
+
+    auto check_all = xnode::ChangesAfterTime(test_node, start_at, false);
+    auto cmp       = xnode::Compare(
+        test_node,
+        check_all.QueryPtrC<INode>(),
+        true,
+        [](const INode::SPtrC& _node, const XKey& _key, const XValueRT& _left, const XValueRT& _right) {
+            // Ignore null values
+            if (_right.Type() == XValue::ValueType::kNull)
+                return false;
+
+            // Ignore 'node2'
+            if (_key.StringGet() == "subnode2")
+                return false;
+            
+            return true;
+        });
+    EXPECT_EQ(cmp, 0) << "BASE:" << xnode::ToJson(test_node) << std::endl << "CHANGES:" << xnode::ToJson(check_all);
+
+    auto check_first = xnode::ChangesAfterTime(test_node, created_at, false);
+    std::cout << "BASE:" << test_node << std::endl << "CHANGES 1:" << xnode::ToJson(check_first);
+
+    EXPECT_EQ(xnode::At(check_first, "first").Type(), XValue::ValueType::kEmpty);
+    EXPECT_EQ(xnode::At(check_first, "first_0").Type(), XValue::ValueType::kNull);
+    EXPECT_EQ(xnode::At(check_first, "node1::subnode2::first_2").Type(), XValue::ValueType::kNull);
+    EXPECT_EQ(xnode::At(check_first, "node1::second").Uint32(), 22);
+    EXPECT_EQ(xnode::At(check_first, "node2::second_2").Uint32(), 22);
+
+    auto check_second = xnode::ChangesAfterTime(test_node, set_at, false);
+    std::cout << "CHANGES 2:" << xnode::ToJson(check_second);
+
+    EXPECT_EQ(xnode::At(check_second, "first").Type(), XValue::ValueType::kEmpty);
+    EXPECT_EQ(xnode::At(check_second, "first_0").Type(), XValue::ValueType::kNull);
+    EXPECT_EQ(xnode::At(check_second, "node1::subnode2::first_2").Type(), XValue::ValueType::kEmpty);
+    EXPECT_EQ(xnode::At(check_second, "first").Type(), XValue::ValueType::kEmpty);
+    EXPECT_EQ(xnode::At(check_second, "third").Uint32(), 99);
+
+    auto check_none = xnode::ChangesAfterTime(test_node, finished_at, false);
+    std::cout << "CHANGES 2:" << xnode::ToJson(check_none);
+
+    EXPECT_TRUE(check_none.IsEmpty()) << "BASE:" << test_node << std::endl << "CHANGES:" << xnode::ToJson(check_none);
+}
+
 // NOLINTEND(*)

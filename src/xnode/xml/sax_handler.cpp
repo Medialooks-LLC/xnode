@@ -117,7 +117,7 @@ void XNodeSaxHandler::StoreNodesOrder_()
 
 void XNodeSaxHandler::PutNode_(std::string_view _node_name)
 {
-    auto key = root ? root_name_.empty() ? _node_name : root_name_ : _node_name;
+    auto key = !root ? (root_name_.empty() ? _node_name : root_name_) : _node_name;
 
     key_        = key;
     auto node_p = xnode::Create(INode::NodeType::Map, key, nodes_stack_.empty() ? root_uid_ : 0);
@@ -167,7 +167,25 @@ void XNodeSaxHandler::EndNode_(std::string_view _node_name)
         ConvertToArray_(last_popped_node);
     }
 
-    PropagateNodeName_(last_popped_node);
+    auto is_root = nodes_stack_.empty();
+    if (is_root) {
+        for (auto leaf_node : array_leaf_nodes_) {
+            if (leaf_node->Size() == 1 && leaf_node->At(value_name_)) {
+                auto leaf_parent = leaf_node->ParentGet();
+                if (leaf_parent && leaf_parent->Type() == INode::NodeType::Map) {
+                    auto text_value = leaf_node->At(value_name_);
+                    leaf_parent->Set(leaf_node->NameGet(), std::move(text_value));
+                    continue;
+                }
+            }
+            PropagateNodeName_(leaf_node);
+        }
+        // root node processing
+        PropagateNodeName_(last_popped_node);
+    }
+    else {
+        array_leaf_nodes_.push_back(last_popped_node);
+    }
 }
 
 void XNodeSaxHandler::StartArray_(std::string_view _node_name)
@@ -210,7 +228,17 @@ INode::SPtr XNodeSaxHandler::EndArray_(std::string_view _node_name)
     assert(deep_ >= 0);
     CollapseArrayNodes_(array_parent_nodes_.back());
     nodes_order_.erase(array_parent_nodes_.back());
+    auto array_node = array_parent_nodes_.back();
     array_parent_nodes_.pop_back();
+
+    // collapse map->array node with same name
+    auto array_parent = array_node->ParentGet();
+    if (array_parent && array_parent->Size() == 1 && array_parent->NameGet() == array_node->NameGet()) {
+        auto array_grandparent = array_parent->ParentGet();
+        if (array_grandparent) {
+            array_grandparent->Set(array_parent->NameGet(), std::move(array_node));
+        }
+    }
     return last_popped_node;
 }
 

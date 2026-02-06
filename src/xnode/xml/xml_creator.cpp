@@ -90,7 +90,12 @@ void XmlDocCreator::AddMapNode_(const INode::SPtrC& _node, XC::DOMElement* _pare
     XC::DOMElement* element;
     std::string     element_name;
     if (_node->ParentGet()->Type() == INode::NodeType::Map || _wrapped) {
-        element = doc_->createElement(tr_->ToXmlChars(_node->NameGet().data())->data());
+        if (_node->IsName("")) {
+            element = _parent;
+        }
+        else {
+            element = doc_->createElement(tr_->ToXmlChars(_node->NameGet().data())->data());
+        }
     }
     else {
         assert(_node->ParentGet()->Type() == INode::NodeType::Array);
@@ -101,7 +106,8 @@ void XmlDocCreator::AddMapNode_(const INode::SPtrC& _node, XC::DOMElement* _pare
             element = doc_->createElement(tr_->ToXmlChars(_node->ParentGet()->NameGet().data())->data());
         }
     }
-    _parent->appendChild(element);
+    if (element != _parent)
+        _parent->appendChild(element);
     for (const auto& [key, xval] : _node->BulkGetAll()) {
         assert(!key.StringGet().value_or("").empty());
         auto child_node = xval.QueryPtrC<INode>();
@@ -131,27 +137,47 @@ void XmlDocCreator::AddMapNode_(const INode::SPtrC& _node, XC::DOMElement* _pare
         }
     }
 }
+size_t XmlDocCreator::CheckCleanNodeSize_(const INode::SPtrC& _node) const
+{
+    if (_node->Type() == INode::NodeType::Array) {
+        return _node->Size();
+    }
+    size_t size = 0;
+    for (const auto& [key, xval] : _node->BulkGetAll()) {
+        if (key.StringGet()->rfind(attribute_prefix_, 0) == 0)
+            continue;
+        ++size;
+    }
+    return size;
+}
 
 void XmlDocCreator::AddArrayNode_(const INode::SPtrC& _node, XC::DOMElement* _parent)
 {
     auto element_name = _node->IsName("") ? GetNameForUnnamedNode_() : _node->NameGet();
+    auto parent       = _parent;
+    if (!_node->ParentGet()->IsName(element_name) && _node->ParentGet()->Type() != INode::NodeType::Array &&
+        CheckCleanNodeSize_(_node->ParentGet()) != 1) {
+        auto element = doc_->createElement(tr_->ToXmlChars(element_name.data())->data());
+        _parent->appendChild(element);
+        parent = element;
+    }
     for (const auto& [key, xval] : _node->BulkGetAll()) {
         auto child_node = xval.QueryPtrC<INode>();
         if (child_node) {
             if (child_node->IsName("")) {
-                AddNode_(child_node, _parent);
+                AddNode_(child_node, parent);
             }
             else {
                 auto element = doc_->createElement(tr_->ToXmlChars(element_name.data())->data());
                 AddNode_(child_node, element, true);
-                _parent->appendChild(element);
+                parent->appendChild(element);
             }
         }
         else {
             auto element = doc_->createElement(tr_->ToXmlChars(element_name.data())->data());
             auto value   = doc_->createTextNode(tr_->ToXmlChars(xval.String().data())->data());
             element->appendChild(value);
-            _parent->appendChild(element);
+            parent->appendChild(element);
         }
     }
 }

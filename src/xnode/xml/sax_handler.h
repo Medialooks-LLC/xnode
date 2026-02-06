@@ -24,6 +24,7 @@ private:
     XKey                     key_;
     std::vector<INode::SPtr> nodes_stack_;
     std::vector<INode::SPtr> array_parent_nodes_;
+    std::vector<INode::SPtr> array_leaf_nodes_;
     uint64_t                 deep_ {0};
     bool                     has_more_chars_ {false};
 

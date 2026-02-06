@@ -14,7 +14,16 @@ INode::SPtr xnode::CreateOrUse(const INode::SPtr& _try_node, INode::NodeType _ty
     if (_try_node && _try_node->Type() == _type)
         return _try_node;
 
-    return Create(_type, _name);
+    return xnode::Create(_type, _name);
+}
+
+INode::SPtr xnode::CreateOrUse(const XValue& _try_value, INode::NodeType _type, std::string_view _name /*= {}*/)
+{
+    auto node_sp = _try_value.QueryPtr<INode>();
+    if (node_sp && node_sp->Type() == _type)
+        return node_sp;
+
+    return xnode::Create(_type, _name);
 }
 
 INode::SPtr xnode::CreateOrClone(const INode::SPtrC& _try_node,
@@ -25,7 +34,7 @@ INode::SPtr xnode::CreateOrClone(const INode::SPtrC& _try_node,
     if (_try_node && _try_node->Type() == _type)
         return xnode::Clone(_try_node, _clone_nodes);
 
-    return Create(_type, _name);
+    return xnode::Create(_type, _name);
 }
 
 INode::SPtr xnode::CreateArray(std::vector<XValue>&& _values, std::string_view _name /*= {}*/, uint64_t _uid /*= 0*/)

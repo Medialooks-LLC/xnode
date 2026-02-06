@@ -132,12 +132,8 @@ TEST(xnode_xml_import_unit_tests, check_valid_map_node_with_nested_map)
     val = f_node->At("-i");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("j", val.String());
-    // k node
+    // k value
     val = f_node->At("k");
-    EXPECT_FALSE(val.IsEmpty());
-    auto k_node = val.QueryPtr<INode>();
-    EXPECT_TRUE(k_node);
-    val = k_node->At("k");
     EXPECT_FALSE(val.IsEmpty());
     EXPECT_EQ("l", val.String());
 }
@@ -939,6 +935,82 @@ TEST(xnode_xml_import_unit_tests, check_valid_big_xml)
     auto book_node = val.QueryPtr<INode>();
     EXPECT_EQ(INode::NodeType::Array, book_node->Type());
     EXPECT_EQ(12, book_node->Size());
+}
+
+TEST(xnode_xml_import_unit_tests, ndi_xml_fail)
+{
+    std::string json = R"({
+    "custom_data": {
+        "#text": ["my value text", {
+                "value_1": "1244"
+            }, {
+                "value_2": "my value 2"
+            }],
+        "-attr_1": "test_attr",
+        "-attr_2": "567"
+    },
+    "ndi_color_info": {
+        "-matrix": "bt_2020",
+        "-primaries": "bt_709",
+        "-transfer": "bt_601"
+    },
+    "ndi_timecode": {
+        "smpte": "10:15:30;41"
+    },
+    "smpte": ["10:15:30;41", "23:16:31:50"]
+})";
+
+    auto [node_check, err1] = xnode::FromJson(json);
+    EXPECT_EQ(err1, 0);
+    ASSERT_TRUE(node_check);
+
+    auto xml = xnode::ToXml(node_check, {}, xnode::XmlFormat::kNoXmlDeclaration); // | xnode::XmlFormat::kPretty
+
+    auto [node_from_xml, err] = xnode::FromXml(xml);
+    EXPECT_EQ(err, 0);
+    ASSERT_TRUE(node_from_xml);
+    auto xml2 = xnode::ToXml(node_from_xml, {}, xnode::XmlFormat::kNoXmlDeclaration);
+    ASSERT_EQ(xml, xml2);
+
+    auto json_base  = xnode::ToJson(node_check);
+    auto json_check = xnode::ToJson(node_from_xml);
+    EXPECT_EQ(json_base, json_check) << std::endl << json_base << std::endl << json_check;
+}
+
+TEST(xnode_xml_import_unit_tests, ndi_xml_fail_2)
+{
+    std::string json = R"({
+    "ndi_timecode": {
+        "smpte": "xxx"
+    }
+})";
+
+    auto node_check = xnode::FromJson(json).first;
+    ASSERT_TRUE(node_check);
+
+    auto xml = xnode::ToXml(node_check, {}, xnode::XmlFormat::kNoXmlDeclaration | xnode::XmlFormat::kPretty);
+
+    auto [node_from_xml, err] = xnode::FromXml(xml);
+    EXPECT_EQ(err, 0);
+    ASSERT_TRUE(node_from_xml);
+
+    auto json_base  = xnode::ToJson(node_check);
+    auto json_check = xnode::ToJson(node_from_xml);
+    EXPECT_EQ(json_base, json_check);
+}
+
+TEST(xnode_xml_import_unit_tests, ndi_xml_fail_3)
+{
+    std::string ndi_xml =
+        R"(<ndi_metadata_group><ndi_color_info matrix="bt_601" primaries="bt_601" transfer="bt_601"/></ndi_metadata_group>)";
+
+    static const std::string kMetadataGroup = "ndi_metadata_group";
+    auto [node_from_xml, err]               = xnode::FromXml(ndi_xml, 0, kMetadataGroup);
+    EXPECT_EQ(err, 0);
+    ASSERT_TRUE(node_from_xml);
+
+    auto xml_out = xnode::ToXml(node_from_xml, {}, xnode::XmlFormat::kNoXmlDeclaration);
+    EXPECT_EQ(xml_out, ndi_xml);
 }
 
 // NOLINTEND(*)

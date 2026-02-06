@@ -129,4 +129,6 @@ size_t xnode::CopyTo(const INode::SPtrC& _source,
     return copied;
 }
 
+
+
 } // namespace xsdk

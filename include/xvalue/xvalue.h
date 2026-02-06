@@ -40,7 +40,7 @@ class XValue: protected XVariant {
 
 public:
     /// @brief The XValue enum defines various value types.
-    enum ValueType {
+    enum /*class*/ ValueType {
         kAny = -1,
         /// Represents an non constant value flag.
         kNonConst = 0x100,
@@ -85,8 +85,6 @@ public:
     // xo_null
     /** @brief Constructs an XValue from a null value.*/
     XValue(std::nullptr_t) : XVariant((XValueNull) nullptr) {}
-    /// @brief Constructs an XValue from a null value.
-    XValue(const void*) : XVariant((XValueNull) nullptr) {}
     ///@}
 
     ///@name Boolean constructors
@@ -151,6 +149,16 @@ public:
     XValue(IObject::SPtr&& _pXObj) { (XVariant&)* this = _pXObj ? XVariant(std::move(_pXObj)) : XVariant(nullptr); }
     /// @brief Copy constructor an XValue from a IObject::SPtr.
     XValue(const IObject::SPtr& _pXObj) { (XVariant&)* this = _pXObj ? XVariant(_pXObj) : XVariant(nullptr); }
+    /** @brief Constructor an XValue from a IObject**/
+    XValue(IObject* _obj_p)
+    {
+        (XVariant&)* this = _obj_p ? XVariant(xobject::PtrQuery<IObject>(_obj_p)) : XVariant(nullptr);
+    }
+    /// @brief Copy constructor an XValue from a const IObject*.
+    XValue(const IObject* _obj_p)
+    {
+        (XVariant&)* this = _obj_p ? XVariant(xobject::PtrQuery<IObject>(_obj_p)) : XVariant(nullptr);
+    }
     /**
      * @brief Constructs an XValue from a shared_ptr of a TObj object.
      * @tparam TObj The object type.
@@ -301,6 +309,8 @@ public:
     template <typename TGet>
     [[nodiscard]] std::optional<TGet> OptionalGet(const std::optional<TGet> _default = {}) const;
 };
+
+// XENUM_OPS32(XValue::ValueType)
 
 template <>
 std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const;

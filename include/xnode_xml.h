@@ -3,6 +3,8 @@
 #include "xconstant.h"
 #include "xnode_interfaces.h"
 
+#include <xbase.h>
+
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -35,15 +37,20 @@ std::pair<INode::SPtr, size_t> FromXml(std::string_view _xml,
 
 /**
  * @brief An enumeration class for specifying the format of the output XML.
- * @details This enum class defines three different XML format options: kOneLine and kPretty.
+ * @details This enum class defines three different XML format options: kOneLine, kPretty and kNoXmlDeclaration.
  */
 enum class XmlFormat {
     /// One-line XML format.
-    kOneLine,
+    kOneLine = 0,
 
     /// Pretty XML format with indentation for readability.
-    kPretty
+    kPretty = 0x01,
+
+    /// No XML declaration header.
+    kNoXmlDeclaration = 0x02
 };
+
+XENUM_OPS32(XmlFormat)
 
 using OnCopyPF = const std::function<OnCopyRes(const INode::SPtrC&, const XKey&, XValueRT&)>;
 /**

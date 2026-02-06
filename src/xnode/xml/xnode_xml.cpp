@@ -89,15 +89,23 @@ std::string xnode::ToXml(const INode::SPtrC& _node_this,
     XC::DOMImplementationLS* impl = (XC::DOMImplementationLS*)XC::DOMImplementationRegistry::getDOMImplementation(
         dom_impl_name);
     if (impl) {
+
         impl::XmlUniquePtr<XC::DOMLSSerializer> serializer {impl->createLSSerializer()};
-        if (_xml_format == XmlFormat::kPretty) {
+        
+        if (_xml_format & XmlFormat::kPretty) {
             if (serializer->getDomConfig()->canSetParameter(XC::XMLUni::fgDOMWRTFormatPrettyPrint, true))
                 serializer->getDomConfig()->setParameter(XC::XMLUni::fgDOMWRTFormatPrettyPrint, true);
             if (serializer->getDomConfig()->canSetParameter(XC::XMLUni::fgDOMWRTXercesPrettyPrint, false))
                 serializer->getDomConfig()->setParameter(XC::XMLUni::fgDOMWRTXercesPrettyPrint, false);
         }
 
-        auto                                mem_buffer = std::make_shared<XC::MemBufFormatTarget>();
+        if (_xml_format & XmlFormat::kNoXmlDeclaration) {
+            if (serializer->getDomConfig()->canSetParameter(XC::XMLUni::fgDOMXMLDeclaration, false))
+                serializer->getDomConfig()->setParameter(XC::XMLUni::fgDOMXMLDeclaration, false);
+        }
+
+        auto mem_buffer = std::make_shared<XC::MemBufFormatTarget>();
+
         impl::XmlUniquePtr<XC::DOMLSOutput> output {impl->createLSOutput()};
         output->setByteStream(mem_buffer.get());
         try {

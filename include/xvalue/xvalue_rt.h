@@ -39,7 +39,7 @@ namespace xnode {
         }
     };
     /**
-     * @brief UniqueClock template class generating unique nanosecond timestamps.
+     * @brief UniqueClock template class generating unique timestamps.
      *
      * This template class UniqueClock generates a clock that returns unique nanosecond timestamps.
      * The first template parameter ClockT specifies the type of high-resolution clock to use.
@@ -70,6 +70,25 @@ namespace xnode {
         constexpr static uint32_t TicksPerSecond() { return TicksPerSecondT; }
     };
 
+    /**
+     * @brief UniqueUtcClock class generating unique 100-nanosecond utc timestamps
+     *
+     * This class UniqueUtcClock generates a clock that returns unique 100-nanosecond utc timestamps.
+     */
+    class UniqueUtcClock {
+    public:
+        /**
+         * @brief Generates the current unique timestamp in nanoseconds.
+         * @return The current unique timestamp in nanoseconds.
+         */
+        static int64_t Timestamp() { return xclock::UtcClock(true)->Time(); }
+
+        /**
+         * @brief The number of ticks per second in the clock.
+         */
+        constexpr static uint32_t TicksPerSecond() { return static_cast<uint32_t>(time64::kSecond); }
+    };
+
 } // namespace xnode
 
 /**
@@ -77,6 +96,6 @@ namespace xnode {
  * @tparam XValue The data type to store.
  * @tparam XTimed A clock type that generates unique monotonic timestamps.
  */
-using XValueRT = XTimed<XValue, xnode::UniqueClock<>>;
+using XValueRT = XTimed<XValue, xnode::UniqueUtcClock>;
 
 } // namespace xsdk
