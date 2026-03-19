@@ -141,9 +141,11 @@ bool XValue::IsNumberConvertable() const noexcept
         case XValueIndex<int64_t>():
         case XValueIndex<uint64_t>():
         case XValueIndex<double>():
-        case XValueIndex<xnode::String::SPtrC>():
             return true;
-
+        case XValueIndex<xnode::String::SPtrC>(): {
+            const auto* p_str = std::get_if<xnode::String::SPtrC>(this)->get();
+            return IsNumberConvertable_(p_str);
+        }
         default:
             return false;
     }
@@ -157,11 +159,11 @@ bool XValue::IsEmpty() const noexcept
         case XValueIndex<std::monostate>():
         case XValueIndex<XValueNull>():
             return true;
-        case XValueIndex<xnode::String::SPtrC>():
-            if (!std::get<xnode::String::SPtrC>(*this))
-                assert(std::get<xnode::String::SPtrC>(*this));
-            return std::get<xnode::String::SPtrC>(*this)->empty();
-
+        case XValueIndex<xnode::String::SPtrC>(): {
+            const auto* p_str = std::get_if<xnode::String::SPtrC>(this)->get();
+            assert(p_str);
+            return p_str->empty();
+        }
         default:
             return false;
     }
@@ -179,7 +181,7 @@ bool XValue::Bool(const bool _default) const
         case XValueIndex<double>():
             return std::get<double>(*this) > 0.0;
         case XValueIndex<xnode::String::SPtrC>(): {
-            auto p_str = std::get<xnode::String::SPtrC>(*this);
+            const auto* p_str = std::get_if<xnode::String::SPtrC>(this)->get();
             assert(p_str);
             // todo: !!! case unsensetive comparision
             return *p_str == "true" || std::atof(p_str->c_str()) > 0;
@@ -247,21 +249,11 @@ uint64_t XValue::Uint64(const uint64_t _default, const uint64_t _negative_res) c
     }
 }
 
-int32_t XValue::Int32(const int32_t _default) const
-{
-    return xbase::Clamp<int32_t>(Int64(_default));
-    // auto ll = Int64(_default);
-    // return ll < std::numeric_limits<int32_t>::min() ? std::numeric_limits<int32_t>::min() :
-    //        ll > std::numeric_limits<int32_t>::max() ? std::numeric_limits<int32_t>::max() :
-    //                                                   static_cast<int32_t>(ll);
-}
+int32_t XValue::Int32(const int32_t _default) const { return xbase::Clamp<int32_t>(Int64(_default)); }
 
 uint32_t XValue::Uint32(const uint32_t _default, const uint32_t _negative_res) const
 {
     return xbase::Clamp<uint32_t>(Uint64(_default, _negative_res));
-    // auto ull = Uint64(_default, _negative_res);
-    // return ull > std::numeric_limits<uint32_t>::max() ? std::numeric_limits<uint32_t>::max() :
-    //                                                     static_cast<uint32_t>(ull);
 }
 
 double XValue::Double(const double _default) const
@@ -275,8 +267,12 @@ double XValue::Double(const double _default) const
             return (double)std::get<uint64_t>(*this);
         case XValueIndex<double>():
             return std::get<double>(*this);
-        case XValueIndex<xnode::String::SPtrC>():
-            return std::atof(std::get<xnode::String::SPtrC>(*this)->c_str());
+        case XValueIndex<xnode::String::SPtrC>(): {
+            const auto* p_str = std::get_if<xnode::String::SPtrC>(this)->get();
+            if (!IsNumberConvertable_(p_str))
+                return _default;
+            return std::atof(p_str->c_str());
+        }
         default:
             return _default;
     }
@@ -334,6 +330,25 @@ IObject::SPtrC XValue::ObjectPtrC(const IObject::SPtrC& _default) const
     return _default;
 }
 
+inline bool XValue::IsNumberConvertable_(const std::string* _p_str)
+{
+    if (!_p_str || !_p_str->length())
+        return false;
+
+    const auto* psz = _p_str->c_str();
+    // skip spaces
+    while (std::isspace(static_cast<uint8_t>(*psz)))
+        ++psz;
+
+    // Alow '-' & '.'
+    if (*psz == '-' || *psz == '.')
+        ++psz;
+
+    // Have to be digit
+    // Note: '.' assumed as invalid
+    return std::isdigit(static_cast<uint8_t>(*psz));
+}
+
 template <>
 std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const
 {
@@ -360,6 +375,17 @@ std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _d
 
     return _default;
 }
+
+#ifdef __APPLE__
+template <>
+std::optional<size_t> XValue::OptionalGet<size_t>(const std::optional<size_t> _default) const
+{
+    if (IsNumberConvertable())
+        return static_cast<size_t>(Uint64());
+
+    return _default;
+}
+#endif
 
 template <>
 std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const

@@ -132,6 +132,11 @@ enum class XNodeType {
 inline size_t NodeSize(const INode* _node_this) { return _node_this ? _node_this->Size() : 0; }
 
 /**
+ * @brief Return the type of node (Array or Map) or std::nullopt if not node
+ */
+std::optional<INode::NodeType> NodeType(const XValue& _value);
+
+/**
  * @brief Inserts a new node into an existing node.
  * @param _node_this The existing node.
  * @param _node_insert The node to be inserted.
@@ -161,17 +166,17 @@ INode::InsertRes NodeConstInsert(const INode::SPtr&  _node_this,
  * @param _node_key The key of the node to retrieve.
  * @return A pointer to the node if it exists, otherwise null.
  */
-[[nodiscard]] INode::SPtr NodeGetByKey(const INode::SPtr&             _node_this,
-                                       const XKey&                    _key,
-                                       std::optional<INode::NodeType> _node_type       = std::nullopt,
-                                       bool                           _convert_to_type = false);
+[[nodiscard]] INode::SPtr NodeGetByKey(INode* const                         _node_this_p,
+                                       const XKey&                          _key,
+                                       const std::optional<INode::NodeType> _node_type       = std::nullopt,
+                                       const bool                           _convert_to_type = false);
 /**
  * @brief Retrieves a node by its key.
  * @param _node_this The node to search in.
  * @param _node_key The key of the node to retrieve.
  * @return A pointer to the constant node if it exists, otherwise null.
  */
-[[nodiscard]] INode::SPtrC NodeConstGetByKey(const INode::SPtrC& _node_this, const XKey& _key);
+[[nodiscard]] INode::SPtrC NodeConstGetByKey(const INode* const _node_this_p, const XKey& _key);
 
 /**
  * @brief Get a node path to specified root .
@@ -290,6 +295,19 @@ INode::SPtr NodeGet(const INode::SPtr&                   _node_this,
 
 /**
  * @brief Recursively retrieves an INode instance using the given XPath and optional node type.
+ * @param _node_this INode instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @param _node_type Optional node type to convert the target node to.
+ * @param _convert_to_type Optional flag indicating if the target node should be converted to the given node type.
+ * @return An INode::SPtr instance to the target node.
+ */
+INode::SPtr NodeGet(INode* const                         _node_this_p,
+                    XPath&&                              _path,
+                    const std::optional<INode::NodeType> _node_type       = std::nullopt,
+                    const bool                           _convert_to_type = false);
+
+/**
+ * @brief Recursively retrieves an INode instance using the given XPath and optional node type.
  * @param _node_value XValue with INode instance to start traversing from.
  * @param _path XPath to traverse to the target node.
  * @param _node_type Optional node type to convert the target node to.
@@ -307,6 +325,13 @@ INode::SPtr NodeGetV(const XValue&                        _node_value,
  * @return An INode::SPtrC instance to the target node.
  */
 [[nodiscard]] INode::SPtrC NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path);
+/**
+ * @brief Const version of NodeGet function for reading purposes only.
+ * @param _node_this INode const instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @return An INode::SPtrC instance to the target node.
+ */
+[[nodiscard]] INode::SPtrC NodeConstGet(const INode* const _node_this_p, XPath&& _path);
 /**
  * @brief Const version of NodeGet function for reading purposes only.
  * @param _node_value XValue with INode const instance to start traversing from.
@@ -513,7 +538,7 @@ size_t EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path, XValue
 // For make equal: "a" : [123] and "a" : 123
 /**
  * @brief Retrieves the values as a vector of element value by the specified XPath.
- * @note If element value is not an array node, it will be returned as a vector with one value.
+ * @note If element value is not an array or map node, it will be returned as a vector with one value.
  * @param _node_this INode instance to start traversing from.
  * @param _path The XPath to navigate through.
  * @param _only_for_type The return values only from Array or Map
@@ -521,7 +546,85 @@ size_t EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path, XValue
  */
 [[nodiscard]] std::vector<XValueRT> ValuesList(const XValue&                        _target_value,
                                                XPath&&                              _path,
-                                               const std::optional<INode::NodeType> _only_for_type = {});
+                                               const std::optional<INode::NodeType> _req_node_type = {});
+
+/**
+ * @brief Retrieves the values as a vector of element values of wanted types by the specified XPath.
+ * @note If element value is not an array or map node, it will be returned as a vector with one value.
+ * @param _node_this INode instance to start traversing from.
+ * @param _path The XPath to navigate through.
+ * @param _only_for_type The return values only from Array or Map
+ * @return A vector containing all typed values of the element by the specified XPath.
+ */
+template <typename TValueType>
+[[nodiscard]] std::vector<TValueType> TypedValuesList(const XValue&                        _target_value,
+                                                      XPath&&                              _path,
+                                                      const std::optional<INode::NodeType> _req_node_type = {})
+{
+    auto node_or_val = At(_target_value, std::move(_path));
+    if (!node_or_val)
+        return {};
+
+    std::vector<TValueType> result;
+    auto                    node = node_or_val.QueryPtrC<INode>();
+    if (node && _req_node_type.value_or(node->Type()) == node->Type()) {
+        node->BulkGetAll([&](const auto& key, const auto& val) {
+            auto opt = val.template OptionalGet<TValueType>();
+            if (opt.has_value())
+                result.push_back(opt.value());
+            return OnCopyRes::Skip;
+        });
+    }
+    else if (!node && !_req_node_type.has_value()) {
+        auto opt = node_or_val.template OptionalGet<TValueType>();
+        if (opt.has_value())
+            result.push_back(opt.value());
+    }
+
+    return result;
+}
+
+/**
+ * @brief Retrieves the values as a vector of element values of specified enum by the specified XPath.
+ * @note If element value is not an array or map node, it will be returned as a vector with one value.
+ * @param _node_this INode instance to start traversing from.
+ * @param _path The XPath to navigate through.
+ * @param _for_error The enum value putted into vector if conversion to desired enum failed.
+ * @param _only_for_type The return values only from Array or Map
+ * @return A vector containing all typed values of the element by the specified XPath.
+ */
+template <typename TEnumType>
+[[nodiscard]] std::vector<TEnumType> EnumValuesList(const XValue&                        _target_value,
+                                                    XPath&&                              _path,
+                                                    const std::optional<TEnumType>       _for_error     = {},
+                                                    const std::optional<INode::NodeType> _req_node_type = {})
+{
+    auto node_or_val = At(_target_value, std::move(_path));
+    if (!node_or_val)
+        return {};
+
+    std::vector<TEnumType> result;
+    auto                   node = node_or_val.QueryPtrC<INode>();
+    if (node && _req_node_type.value_or(node->Type()) == node->Type()) {
+        node->BulkGetAll([&](const auto& key, const auto& val) {
+            auto opt = val.template EnumGet<TEnumType>();
+            if (opt.has_value())
+                result.push_back(opt.value());
+            else if (_for_error.has_value())
+                result.push_back(_for_error.value());
+            return OnCopyRes::Skip;
+        });
+    }
+    else if (!node && !_req_node_type.has_value()) {
+        auto opt = node_or_val.template EnumGet<TEnumType>();
+        if (opt.has_value())
+            result.push_back(opt.value());
+        else if (_for_error.has_value())
+            result.push_back(_for_error.value());
+    }
+
+    return result;
+}
 
 /**
  * @brief Retrieves the nodes at the given XPath.
@@ -655,6 +758,69 @@ template <typename TObject>
         return check_non_const;
 
     return value.QueryPtrC(_default);
+}
+
+template <typename TValue>
+std::optional<TValue> LoadValue(const INode*                _node_p,
+                                const XKey&                 _key,
+                                TValue*                     _out_p,
+                                const std::optional<TValue> _ignore_value = {})
+{
+    // No reason for use LoadXXX w/o _out_p - use At(_key).OptionalGet<TValue>() instead
+    assert(_out_p);
+
+    if (!_node_p)
+        return std::nullopt;
+
+    auto val = _node_p->At(_key).template OptionalGet<TValue>();
+    if (!val.has_value())
+        return std::nullopt;
+
+    if (_ignore_value.has_value() && val.value() == _ignore_value.value())
+        return std::nullopt;
+
+    if (_out_p)
+        *_out_p = val.value();
+
+    return val;
+}
+
+template <typename TValue>
+std::optional<TValue> LoadOptional(const INode* _node_p, const XKey& _key, std::optional<TValue>* _out_p)
+{
+    // No reason for use LoadXXX w/o _out_p - use At(_key).OptionalGet<TValue>() instead
+    assert(_out_p);
+
+    if (!_node_p)
+        return std::nullopt;
+
+    auto val = _node_p->At(_key).template OptionalGet<TValue>();
+    if (!val.has_value())
+        return std::nullopt;
+
+    if (_out_p)
+        *_out_p = val.value();
+
+    return val;
+}
+
+template <typename TEnum>
+std::optional<TEnum> LoadEnum(const INode* _node_p, const XKey& _key, TEnum* _out_p)
+{
+    // No reason for use LoadXXX w/o _out_p - use At(_key).EnumGet<TEnum>() instead
+    assert(_out_p);
+
+    if (!_node_p)
+        return std::nullopt;
+
+    auto val = _node_p->At(_key).template EnumGet<TEnum>();
+    if (!val.has_value())
+        return std::nullopt;
+
+    if (_out_p)
+        *_out_p = val.value();
+
+    return val;
 }
 
 } // namespace xsdk::xnode

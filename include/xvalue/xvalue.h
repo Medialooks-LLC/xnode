@@ -308,6 +308,9 @@ public:
     /// std::nullopt
     template <typename TGet>
     [[nodiscard]] std::optional<TGet> OptionalGet(const std::optional<TGet> _default = {}) const;
+
+private:
+    static bool IsNumberConvertable_(const std::string* _p_str);
 };
 
 // XENUM_OPS32(XValue::ValueType)
@@ -317,6 +320,11 @@ std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default
 
 template <>
 std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _default) const;
+
+#ifdef __APPLE__
+template <>
+std::optional<size_t> XValue::OptionalGet<size_t>(const std::optional<size_t> _default) const;
+#endif
 
 template <>
 std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const;

@@ -49,7 +49,7 @@ INode::SPtr xnode::NodeGet(const INode::SPtr&                   _node_this,
     INode::SPtr node_dest    = _node_this;
     while (node_dest && _path.Size() > 1) {
         auto key_node = _path.PopFront();
-        node_dest     = xnode::NodeGetByKey(node_dest,
+        node_dest     = xnode::NodeGetByKey(node_dest.get(),
                                         key_node,
                                         create_nodes ? XKeyToNodeType::Match(_path.At(0)) : std::nullopt,
                                         false);
@@ -58,7 +58,35 @@ INode::SPtr xnode::NodeGet(const INode::SPtr&                   _node_this,
     if (!node_dest || _path.Empty())
         return node_dest;
 
-    return xnode::NodeGetByKey(node_dest, _path.Back(), _node_type, _convert_to_type);
+    return xnode::NodeGetByKey(node_dest.get(), _path.Back(), _node_type, _convert_to_type);
+}
+
+INode::SPtr xnode::NodeGet(INode* const                         _node_this_p,
+                           XPath&&                              _path,
+                           const std::optional<INode::NodeType> _node_type,
+                           const bool                           _convert_to_type)
+{
+    if (_path.Empty())
+        return xobject::PtrQuery<INode>(_node_this_p);
+
+    bool create_nodes = _node_type.has_value();
+
+    INode::SPtr node_child;
+    auto*       node_p = _node_this_p;
+    while (node_p && _path.Size() > 1) {
+        auto key   = _path.PopFront();
+        node_child = xnode::NodeGetByKey(node_p,
+                                         key,
+                                         create_nodes ? XKeyToNodeType::Match(_path.At(0)) : std::nullopt,
+                                         false);
+        node_p     = node_child.get();
+    }
+
+    assert(!_path.Empty());
+    if (!node_p)
+        return {};
+
+    return xnode::NodeGetByKey(node_p, _path.Back(), _node_type, _convert_to_type);
 }
 
 INode::SPtr xnode::NodeGetV(const XValue&                        _node_value,
@@ -74,6 +102,21 @@ INode::SPtrC xnode::NodeConstGet(const INode::SPtrC& _node_this, XPath&& _path)
     INode::SPtrC node_dest = _node_this;
     while (node_dest && !_path.Empty())
         node_dest = node_dest->At(_path.PopFront()).QueryPtrC<INode>();
+
+    return node_dest;
+}
+
+[[nodiscard]] INode::SPtrC xnode::NodeConstGet(const INode* const _node_this_p, XPath&& _path)
+{
+    if (_path.Empty())
+        return xobject::PtrQuery<INode>(_node_this_p);
+
+    INode::SPtrC node_dest;
+    const auto*  node_p = _node_this_p;
+    while (node_p && !_path.Empty()) {
+        node_dest = node_p->At(_path.PopFront()).QueryPtrC<INode>();
+        node_p    = node_dest.get();
+    }
 
     return node_dest;
 }
@@ -325,7 +368,7 @@ size_t xnode::EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path,
         return 0;
 
     auto existed_val = node_dest->At(key_dest);
-    auto array_node  = xnode::NodeGetByKey(node_dest, key_dest, INode::NodeType::Array, true);
+    auto array_node  = xnode::NodeGetByKey(node_dest.get(), key_dest, INode::NodeType::Array, true);
     if (existed_val && existed_val != array_node) {
         assert(array_node->Empty());
         array_node->Insert(kIdxEnd, std::move(existed_val));
@@ -337,22 +380,22 @@ size_t xnode::EmplaceToArray(const INode::SPtr& _node_this, XPath&& _array_path,
 
 std::vector<XValueRT> xnode::ValuesList(const XValue&                        _target_value,
                                         XPath&&                              _path,
-                                        const std::optional<INode::NodeType> _only_for_type)
+                                        const std::optional<INode::NodeType> _req_node_type)
 {
-    auto array_or_val = At(_target_value, std::move(_path));
-    if (!array_or_val)
+    auto node_or_val = At(_target_value, std::move(_path));
+    if (!node_or_val)
         return {};
 
     std::vector<XValueRT> result;
-    auto                  node = array_or_val.QueryPtrC<INode>();
-    if (node && (!_only_for_type.has_value() || node->Type() == _only_for_type.value())) {
+    auto                  node = node_or_val.QueryPtrC<INode>();
+    if (node && (!_req_node_type.has_value() || node->Type() == _req_node_type.value())) {
         node->BulkGetAll([&](const auto& key, const auto& val) {
             result.push_back(val);
             return OnCopyRes::Skip;
         });
     }
-    else if (!node && !_only_for_type.has_value()) {
-        result.push_back(array_or_val);
+    else if (!node && !_req_node_type.has_value()) {
+        result.push_back(node_or_val);
     }
 
     return result;

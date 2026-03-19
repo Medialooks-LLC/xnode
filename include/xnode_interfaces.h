@@ -22,6 +22,7 @@ public:
     // Declate shared, unique, weak pts (for override PtrBase<IObject> in base class)
     USING_PTRS(INode)
 
+    // TODO: Rename to Type, and method to NodeType() 
     /**
      * @brief   Defines an enumeration class 'NodeType' with two possible values: 'Map' and 'Array'
      * @details This enumeration class is used to define different types of nodes in a data structure.

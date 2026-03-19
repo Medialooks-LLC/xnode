@@ -19,6 +19,15 @@ xnode::XNodeType xnode::NodeTypeGet(const XValue& _val)
     return XNodeType::not_node;
 }
 
+std::optional<INode::NodeType> xnode::NodeType(const XValue& _value)
+{
+    auto node = _value.QueryPtrC<INode>();
+    if (!node)
+        return std::nullopt;
+
+    return node->Type();
+}
+
 INode::InsertRes xnode::NodeInsert(const INode::SPtr& _node_this,
                                    const INode::SPtr& _node_insert,
                                    bool               _replace_node,
@@ -65,16 +74,16 @@ INode::InsertRes xnode::NodeConstInsert(const INode::SPtr&  _node_this,
     return {updated, key, updated ? XValueRT() : val /*XValue(_node_insert)*/};
 }
 
-INode::SPtr xnode::NodeGetByKey(const INode::SPtr&             _node_this,
-                                const XKey&                    _key,
-                                std::optional<INode::NodeType> _node_type,
-                                bool                           _convert_to_type)
+INode::SPtr xnode::NodeGetByKey(INode* const                         _node_this_p,
+                                const XKey&                          _key,
+                                const std::optional<INode::NodeType> _node_type,
+                                const bool                           _convert_to_type)
 {
-    if (!_node_this)
+    if (!_node_this_p)
         return nullptr;
 
     INode::SPtr node_new_sp;
-    auto        xval = _node_this->At(_key);
+    auto        xval = _node_this_p->At(_key);
     while (true) {
         auto node_p = xval.QueryPtr<INode>();
         if (node_p && node_p->Type() == _node_type.value_or(node_p->Type()))
@@ -88,7 +97,7 @@ INode::SPtr xnode::NodeGetByKey(const INode::SPtr&             _node_this,
         if (!node_new_sp)
             return nullptr;
 
-        auto [success, current] = _node_this->CompareExchange(_key, xval, node_new_sp);
+        auto [success, current] = _node_this_p->CompareExchange(_key, xval, node_new_sp);
         if (success)
             return node_new_sp;
 
@@ -102,12 +111,12 @@ INode::SPtr xnode::NodeGetByKey(const INode::SPtr&             _node_this,
     return nullptr;
 }
 
-INode::SPtrC xnode::NodeConstGetByKey(const INode::SPtrC& _node_this, const XKey& _key)
+INode::SPtrC xnode::NodeConstGetByKey(const INode* const _node_this_p, const XKey& _key)
 {
-    if (!_node_this)
+    if (!_node_this_p)
         return nullptr;
 
-    return _node_this->At(_key).QueryPtrC<INode>();
+    return _node_this_p->At(_key).QueryPtrC<INode>();
 }
 
 } // namespace xsdk

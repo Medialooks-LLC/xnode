@@ -620,4 +620,79 @@ TEST(xnode_utests, xnode_at_test)
     EXPECT_EQ(xnode::At({node_1, node_2}, "top_val_1").Uint32(), 11);
     EXPECT_EQ(xnode::At({node_2, node_1}, "top_val_1").Uint32(), 11);
 }
+
+TEST(xnode_utests, values_list)
+{
+    auto node = xnode::CreateMap();
+    node->Set("array", xnode::CreateArray({12, 14, 14.9, "abc", true}));
+
+    auto val_list = xnode::ValuesList(node, "array", INode::NodeType::Map);
+    EXPECT_TRUE(val_list.empty()) << "xnode::ValuesList(node, 'array', INode::NodeType::Map)";
+
+    val_list = xnode::ValuesList(node, "array", INode::NodeType::Array);
+    ASSERT_EQ(val_list.size(), 5) << "xnode::ValuesList(node, 'array', INode::NodeType::Array)";
+    val_list = xnode::ValuesList(node, "array");
+    ASSERT_EQ(val_list.size(), 5) << "xnode::ValuesList(node, 'array')";
+    EXPECT_EQ(val_list[0], 12);
+    EXPECT_EQ(val_list[2], 14.9);
+    EXPECT_EQ(val_list[3], "abc");
+    EXPECT_EQ(val_list[4], true);
+
+    val_list = xnode::ValuesList(node, {}, INode::NodeType::Array);
+    EXPECT_TRUE(val_list.empty()) << "xnode::ValuesList(node, {}, INode::NodeType::Array)";
+
+    val_list = xnode::ValuesList(node, {});
+    ASSERT_EQ(val_list.size(), 1) << "xnode::ValuesList(node, {})";
+    ASSERT_TRUE(val_list[0].QueryPtrC<INode>());
+    EXPECT_EQ(val_list[0].QueryPtrC<INode>()->Size(), 5);
+}
+
+TEST(xnode_utests, typed_values_list)
+{
+    auto node = xnode::CreateMap();
+    node->Set("array", xnode::CreateArray({12, 14, 14.9, -10.0, "abc", true}));
+
+    auto val_list = xnode::TypedValuesList<int32_t>(node, "array", INode::NodeType::Map);
+    EXPECT_TRUE(val_list.empty()) << "xnode::TypedValuesList<int32_t>(node, 'array', INode::NodeType::Map)";
+
+    val_list = xnode::TypedValuesList<int32_t>(node, "array", INode::NodeType::Array);
+    ASSERT_EQ(val_list.size(), 5) << "xnode::TypedValuesList<int32_t>(node, 'array', INode::NodeType::Array)";
+    EXPECT_EQ(val_list[0], 12);
+    EXPECT_EQ(val_list[2], 15);
+    EXPECT_EQ(val_list[3], -10);
+    EXPECT_EQ(val_list[4], 1);
+
+    auto val_list_u = xnode::TypedValuesList<uint32_t>(node, "array");
+    ASSERT_EQ(val_list_u.size(), 5) << "xnode::TypedValuesList<uint32_t>(node, 'array')";
+    EXPECT_EQ(val_list_u[0], 12);
+    EXPECT_EQ(val_list_u[2], 15);
+    EXPECT_EQ(val_list_u[3], 0);
+    EXPECT_EQ(val_list_u[4], 1);
+
+    auto val_list_b = xnode::TypedValuesList<bool>(node, "array");
+    ASSERT_EQ(val_list_b.size(), 5) << "xnode::TypedValuesList<uint32_t>(node, 'array')";
+    EXPECT_EQ(val_list_b[0], true);
+    EXPECT_EQ(val_list_b[2], true);
+    EXPECT_EQ(val_list_b[3], false);
+    EXPECT_EQ(val_list_b[4], true);
+}
+
+#define SIZE_T_DISTINCT_FROM_UINT64 (!std::is_same_v<size_t, uint64_t>)
+TEST(xnode_utests, optional_size_t_get)
+{
+
+#ifdef SIZE_T_DISTINCT_FROM_UINT64
+    std::cout << "SIZE_T_DISTINCT_FROM_UINT64" << std::endl;
+#else
+    std::cout << "NOT SIZE_T_DISTINCT_FROM_UINT64" << std::endl;
+#endif
+
+    XValue val(1234);
+    auto   u64 = val.OptionalGet<uint64_t>();
+    EXPECT_EQ(u64, 1234);
+    auto st = val.OptionalGet<size_t>();
+    EXPECT_EQ(st, 1234);
+    auto u32 = val.OptionalGet<uint32_t>();
+    EXPECT_EQ(u32, 1234);
+}
 // NOLINTEND(*)
