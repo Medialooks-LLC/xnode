@@ -19,6 +19,15 @@ xnode::XNodeType xnode::NodeTypeGet(const XValue& _val)
     return XNodeType::not_node;
 }
 
+std::optional<size_t> xnode::NodeSizeV(const XValue& _value)
+{
+    auto node = _value.QueryPtrC<INode>();
+    if (!node)
+        return std::nullopt;
+
+    return node->Size();
+}
+
 std::optional<INode::NodeType> xnode::NodeType(const XValue& _value)
 {
     auto node = _value.QueryPtrC<INode>();

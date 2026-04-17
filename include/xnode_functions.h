@@ -132,6 +132,11 @@ enum class XNodeType {
 inline size_t NodeSize(const INode* _node_this) { return _node_this ? _node_this->Size() : 0; }
 
 /**
+ * @brief Return the size of node or std::nullopt if not node
+ */
+std::optional<size_t> NodeSizeV(const XValue& _value);
+
+/**
  * @brief Return the type of node (Array or Map) or std::nullopt if not node
  */
 std::optional<INode::NodeType> NodeType(const XValue& _value);
@@ -187,20 +192,31 @@ INode::InsertRes NodeConstInsert(const INode::SPtr&  _node_this,
 [[nodiscard]] std::pair<XPath, INode::SPtrC> NodePath(const INode* _node_this_p, const INode* _root_p = nullptr);
 
 /**
+ * @brief Round all node include subnodes, till
+ * @param _pf_on_each - the callback for each element, return true for stop (on element) or skip node (on nodes)
+ *
+ * @return The counter of callbacks
+ */
+size_t ForEach(const INode* const                                        _node_p,
+               const bool                                                _callback_for_nodes,
+               const std::function<bool(const XPath&, const XValueRT&)>& _pf_on_each,
+               const XPath&                                              _path_prefix = {});
+
+/**
  * @brief Compares two nodes based on their content and structure.
  * @param _node_left The left node to be compared.
  * @param _node_right The right node to be compared.
  * @param _nodes_unwrap Whether to unwrap nested nodes during comparison.
- * @param _pf_on_different A function to handle elements with different keys and values.
+ * @param _pf_on_different A function to handle elements with different keys and values, return true for stop
  *
  * @return The comparison result. A value less than zero if _node_left comes before _node_right.
  * A value greater than zero if _node_left comes after _node_right. Zero if both nodes are equal.
  */
 int32_t Compare(const INode::SPtrC& _node_left,
                 const INode::SPtrC& _node_right,
-                bool                _nodes_unwrap,
+                const bool          _nodes_unwrap,
                 const std::function<bool(const INode::SPtrC&, const XKey&, const XValueRT&, const XValueRT&)>&
-                    _pf_on_different = nullptr);
+                    _pf_on_different = {});
 
 /**
  * @brief Applies patches to nodes by adding, updating, or removing elements.
@@ -446,7 +462,14 @@ XValueRT ChangesAfterTime(const XValueRT& _value, const xbase::Time64 _after_tim
  * @return A pair of a boolean indicating success and the value of the target element before setting it.
  */
 std::pair<bool, XValueRT> Set(const INode::SPtr& _node_this, XPath&& _path, XValue&& _val);
-
+/**
+ * @brief Sets the value of a node at the specified XPath.
+ * @param _node_this INode instance to start traversing from.
+ * @param _path XPath to traverse to the target node.
+ * @param _val Value to set the target node to.
+ * @return A pair of a boolean indicating success and the value of the target element before setting it.
+ */
+std::pair<bool, XValueRT> Set(INode* const _node_this_p, XPath&& _path, XValue&& _val);
 /**
  * @brief Optional sets the value of a node at the specified XPath.
  * @param _node_this INode instance to start traversing from.

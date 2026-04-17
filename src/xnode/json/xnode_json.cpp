@@ -39,6 +39,15 @@ namespace impl {
     {
         assert(_writer_p);
 
+        constexpr auto is_js_safe_ui64 = [](const uint64_t _value) constexpr -> bool {
+            return _value <= ((uint64_t {1} << 53) - 1);
+        };
+
+        constexpr auto is_js_safe_i64 = [](const int64_t _value) constexpr -> bool {
+            constexpr int64_t kMax = (int64_t {1} << 53) - 1;
+            return _value >= -kMax && _value <= kMax;
+        };
+
         bool repeat_write = true;
         while (std::exchange(repeat_write, false)) {
 
@@ -51,10 +60,16 @@ namespace impl {
                     _writer_p->Bool(_value.Bool());
                     break;
                 case XValue::kInt64:
-                    _writer_p->Int64(_value.Int64());
+                    if (is_js_safe_i64(_value.Int64()))
+                        _writer_p->Int64(_value.Int64());
+                    else
+                        _writer_p->String(_value.String().c_str());
                     break;
                 case XValue::kUint64:
-                    _writer_p->Int64(_value.Uint64());
+                    if (is_js_safe_ui64(_value.Uint64()))
+                        _writer_p->Uint64(_value.Uint64());
+                    else
+                        _writer_p->String(_value.String().c_str());
                     break;
                 case XValue::kDouble:
                     _writer_p->Double(_value.Double());

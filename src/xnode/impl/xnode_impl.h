@@ -42,9 +42,11 @@ public:
     virtual INode::InsertRes PrivateInsert(const XKey& _key, XValue&& _val) = 0;
 };
 
-class XNode final: public INode, public INodePrivate, public std::enable_shared_from_this<XNode> {
+class XNode final: public xbase::ObjectBase<XNode, INode, INodePrivate>, public INodePrivate {
 
-    const uint64_t                          object_uid_;
+    using ObjectBase_ = xbase::ObjectBase<XNode, INode, INodePrivate>;
+
+private:
     mutable std::shared_mutex               container_rw_;
     const std::unique_ptr<IContainerMatch>  container_match_p_;
     const std::unique_ptr<IParentValidator> parent_validator_p_;
@@ -78,12 +80,6 @@ public:
 
     static int64_t Counter() { return nodes_counter_.load(); }
 #endif
-
-    //-------------------------------------------------------------------------------
-    // IObject override
-    virtual uint64_t ObjectUid() const override { return object_uid_; }
-    virtual std::any QueryPtr(xbase::Uid _type_query) override;
-    virtual std::any QueryPtrC(xbase::Uid _type_query) const override;
 
     //-------------------------------------------------------------------------------
     // INode specific methods
@@ -195,8 +191,8 @@ private:
     static XValueRT MakeConst_(const XValueRT& _val);
 
     // Basic helpers
-    INode::SPtr       NodeThis_() { return std::static_pointer_cast<INode>(shared_from_this()); }
-    INode::SPtrC      NodeThis_() const { return std::static_pointer_cast<const INode>(shared_from_this()); }
+    INode::SPtr       NodeThis_() { return shared_from_this(); }
+    INode::SPtrC      NodeThis_() const { return shared_from_this(); }
     IContainer*       ContainerGet_() { return container_match_p_->ContainerGet(); }
     const IContainer* ContainerGet_() const { return container_match_p_->ContainerGet(); }
 

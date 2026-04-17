@@ -14,8 +14,8 @@ static constexpr int64_t kAbsentRT = std::numeric_limits<int64_t>::min();
 
 /**
  * @brief A templated class XTimed that extends TValue and stores a timestamp using TClock.
- * @template TValue The data type of the value stored in XTimed.
- * @template TClock The clock type used to get the current timestamp.
+ * @tparam TValue The data type of the value stored in XTimed.
+ * @tparam TClock The clock type used to get the current timestamp.
  */
 template <class TValue, class TClock>
 class XTimed: public TValue {
@@ -28,7 +28,7 @@ public:
     using timed_value = TValue;
 
     using TValue::TValue;
-    using TValue::operator=;
+    // VVB: Do not enable TValue::operator =, as if enabled -> timestamps not updated for XValueRT = XValue()
 
     ///@name Constructors
     ///@{
@@ -55,19 +55,32 @@ public:
     /**
      * @brief Move constructor initializing the XTimed with a given TValue and timestamp.
      * @param _val The value to be stored in XTimed.
-     * @param _timestamp The timestamp to be stored in XTimed.
+     * @param _timespamp The timestamp to be stored in XTimed.
      */
     XTimed(TValue&& _val, int64_t _timespamp) : TValue(std::move(_val)), timestamp_(_timespamp) {}
     /**
      * @brief Copy constructor initializing the XTimed with a given TValue and timestamp.
      * @param _val The value to be stored in XTimed.
-     * @param _timestamp The timestamp to be stored in XTimed.
+     * @param _timespamp The timestamp to be stored in XTimed.
      */
     XTimed(const TValue& _val, int64_t _timespamp) : TValue(_val), timestamp_(_timespamp) {}
     ///@}
 
     XTimed& operator=(const XTimed& _val)     = default;
     XTimed& operator=(XTimed&& _val) noexcept = default;
+
+    XTimed& operator=(const TValue& _val)
+    {
+        (TValue&)(*this) = _val;
+        timestamp_      = TClock::Timestamp();
+        return *this;
+    }
+    XTimed& operator=(TValue&& _val) noexcept
+    {
+        (TValue&)(*this) = std::move(_val);
+        timestamp_       = TClock::Timestamp();
+        return *this;
+    }
 
     ///@name TClock helper methods
     ///@{

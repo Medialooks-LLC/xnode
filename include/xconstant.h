@@ -40,8 +40,8 @@ enum class OnEachRes {
 ///@name Special values for map/arrays
 ///@{
 static constexpr size_t kIdxBegin = 0;  ///< The index of the first element in the map/array.
-static constexpr size_t kIdxEnd   = -1; ///< The index of the one before the last element in the map/array.
-static constexpr size_t kIdxLast  = -2; ///< The index of the last element in the map/array.
+static constexpr size_t kIdxEnd   = static_cast<size_t>(-1);  ///< The index of the one before the last element in the map/array.
+static constexpr size_t kIdxLast  = static_cast<size_t>(-2); ///< The index of the last element in the map/array.
 ///@}
 
 ///@name Key speration values for allow string representation of XPath

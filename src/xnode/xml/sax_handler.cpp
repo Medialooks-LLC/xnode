@@ -106,7 +106,7 @@ std::pair<XKey, XKey> XNodeSaxHandler::GetLastAndNewKeys_(const INode::SPtr& _no
 
 void XNodeSaxHandler::StoreNodesOrder_()
 {
-    auto key_str = key_.StringGet() ? key_.StringGet().value().data() : (assert(false), "");
+    auto key_str = key_.StringGet() ? key_.StringGet()->data() : (assert(false), "");
     if (nodes_order_.count(nodes_stack_.back()) != 0) {
         nodes_order_.at(nodes_stack_.back()).push_back(key_str);
     }
@@ -251,7 +251,7 @@ void XNodeSaxHandler::CollapseArrayNodes_(const INode::SPtr& _node)
         if (child && child->Size() == 1) {
             auto elements = child->BulkGetAll(); // how to get name of element
             auto key      = elements.back().first;
-            if (key.StringGet().value().compare(0, attr_prefix.size(), attr_prefix) != 0) {
+            if (key.StringGet()->compare(0, attr_prefix.size(), attr_prefix) != 0) {
                 to_update.push_back(_key);
             }
         }

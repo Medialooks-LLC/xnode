@@ -620,7 +620,34 @@ TEST(xnode_utests, xnode_at_test)
     EXPECT_EQ(xnode::At({node_1, node_2}, "top_val_1").Uint32(), 11);
     EXPECT_EQ(xnode::At({node_2, node_1}, "top_val_1").Uint32(), 11);
 }
+TEST(xnode_utests, path_constructors)
+{
+    const auto str  = std::string("str");
+    XPath      path = {"one", 10, "two"};
 
+    auto check1 = XPath {path, "test", 12, str, path};
+    auto check2 = XPath {"test", 12, path, str};
+    auto check3 = XPath {12, path};
+    auto check4 = XPath {std::string("str_1"), path};
+    auto check5 = XPath {str, path};
+    auto check6 = XPath {check5, std::move(path)};
+
+    EXPECT_EQ(check1.ToString(), "one[10]::two::test[12]::str::one[10]::two");
+    EXPECT_EQ(check2.ToString(), "test[12]::one[10]::two::str");
+    EXPECT_EQ(check3.ToString(), "[12]::one[10]::two");
+    EXPECT_EQ(check4.ToString(), "str_1::one[10]::two");
+    EXPECT_EQ(check5.ToString(), "str::one[10]::two");
+    EXPECT_EQ(check6.ToString(), "str::one[10]::two::one[10]::two");
+    EXPECT_TRUE(path.Empty());
+
+    auto check7 = std::move(check6);
+    EXPECT_EQ(check7.ToString(), "str::one[10]::two::one[10]::two");
+    EXPECT_TRUE(check6.Empty());
+
+    auto check8 = XPath {std::move(check7), 77, "abc", check3};
+    EXPECT_EQ(check8.ToString(), "str::one[10]::two::one[10]::two[77]::abc[12]::one[10]::two");
+    EXPECT_TRUE(check7.Empty());
+}
 TEST(xnode_utests, values_list)
 {
     auto node = xnode::CreateMap();

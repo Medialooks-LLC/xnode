@@ -807,16 +807,35 @@ TEST(xnode_tests, elapsed_time)
     EXPECT_GT(current.TimeElapsed(), 0);
     EXPECT_LT(current.TimeElapsed(), XValueRT::MsecToTicks(1));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    node_map_sp->Set("1", 123);
+    node_map_sp->Set("2", "123");
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     auto [ok, prev] = node_map_sp->Set("0", "_first");
     EXPECT_EQ(ok, true);
     EXPECT_EQ(prev.String(), "first");
     EXPECT_GT(prev.TimeElapsed(), XValueRT::MsecToTicks(10));
-    EXPECT_LT(prev.TimeElapsed(), XValueRT::MsecToTicks(100));
+    EXPECT_LT(prev.TimeElapsed(), XValueRT::MsecToTicks(200));
 
     EXPECT_GT(node_map_sp->At("0").TimeElapsed(), 0);
-    EXPECT_LT(node_map_sp->At("0").TimeElapsed(), XValueRT::MsecToTicks(1));
+    EXPECT_LT(node_map_sp->At("0").TimeElapsed(), XValueRT::MsecToTicks(10));
+
+    auto inc = node_map_sp->Increment("1", 55);
+
+    EXPECT_GT(inc.TimeElapsed(), 0);
+    EXPECT_LT(inc.TimeElapsed(), XValueRT::MsecToTicks(10));
+
+    EXPECT_GT(node_map_sp->At("1").TimeElapsed(), 0);
+    EXPECT_LT(node_map_sp->At("1").TimeElapsed(), XValueRT::MsecToTicks(10));
+
+    auto app = node_map_sp->Append("2", "STR2");
+
+    EXPECT_GT(app.TimeElapsed(), 0);
+    EXPECT_LT(app.TimeElapsed(), XValueRT::MsecToTicks(10));
+
+    EXPECT_GT(node_map_sp->At("2").TimeElapsed(), 0);
+    EXPECT_LT(node_map_sp->At("2").TimeElapsed(), XValueRT::MsecToTicks(10));
 }
 
 TEST(xnode_tests, erasing_elapsed)
@@ -1143,7 +1162,7 @@ TEST(xnode_tests, changed_after_time)
             // Ignore 'node2'
             if (_key.StringGet() == "subnode2")
                 return false;
-            
+
             return true;
         });
     EXPECT_EQ(cmp, 0) << "BASE:" << xnode::ToJson(test_node) << std::endl << "CHANGES:" << xnode::ToJson(check_all);

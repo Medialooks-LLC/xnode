@@ -65,7 +65,7 @@ public:
      * @brief Defines a function type alias for an OnChange callback function.
      *
      * This callback function takes the following arguments:
-     * @param _reason     The reason for the callback being invoked. @See CallbackReason.
+     * @param _reason     The reason for the callback being invoked. @see CallbackReason.
      * @param _node       A shared pointer to the node that triggered the change.
      * @param _key        The key of element that was modified.
      * @param _prev_value The previous value of the element.

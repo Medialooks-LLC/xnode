@@ -15,7 +15,7 @@ XNode::XNode(std::unique_ptr<IContainerMatch>&&  _container_match,
              std::unique_ptr<IParentValidator>&& _parent_validator,
              uint64_t                            _uid,
              std::string_view                    _name)
-    : object_uid_(_uid == xbase::kInvalidUid ? xbase::NextUid() : _uid),
+    : ObjectBase_(_uid == xbase::kInvalidUid ? xbase::NextUid() : _uid),
       container_match_p_(std::move(_container_match)),
       parent_validator_p_(std::move(_parent_validator))
 {
@@ -28,37 +28,6 @@ XNode::XNode(std::unique_ptr<IContainerMatch>&&  _container_match,
 #ifdef _DEBUG
     nodes_counter_.fetch_add(1);
 #endif
-}
-
-//-------------------------------------------------------------------------------
-// IObject override
-
-std::any XNode::QueryPtr(xbase::Uid _type_query)
-{
-    if (_type_query == xbase::TypeUid<INodePrivate>())
-        return std::static_pointer_cast<INodePrivate>(shared_from_this());
-
-    if (_type_query == xbase::TypeUid<INode>())
-        return std::static_pointer_cast<INode>(shared_from_this());
-
-    if (_type_query == xbase::TypeUid<IObject>())
-        return std::static_pointer_cast<IObject>(shared_from_this());
-
-    return {};
-}
-
-std::any XNode::QueryPtrC(xbase::Uid _type_query) const
-{
-    if (_type_query == xbase::TypeUid<const INodePrivate>())
-        return std::static_pointer_cast<const INodePrivate>(shared_from_this());
-
-    if (_type_query == xbase::TypeUid<const INode>())
-        return std::static_pointer_cast<const INode>(shared_from_this());
-
-    if (_type_query == xbase::TypeUid<const IObject>())
-        return std::static_pointer_cast<const IObject>(shared_from_this());
-
-    return {};
 }
 
 INode::NodeType XNode::Type() const
@@ -181,7 +150,7 @@ bool XNode::KeyChange(const XKey& _from, const XKey& _to)
     lck.unlock();
 
     if (_to.Type() == XKey::KeyType::String) {
-        auto node_private = moved_val.value().QueryPtr<INodePrivate>();
+        auto node_private = moved_val->QueryPtr<INodePrivate>();
         if (node_private)
             node_private->PrivateNameSet(_to.StringGet().value());
     }

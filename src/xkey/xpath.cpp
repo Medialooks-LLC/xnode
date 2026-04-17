@@ -5,19 +5,30 @@
 
 namespace xsdk {
 
+XKey& XPath::Front()
+{
+    assert(!Empty());
+    return Empty() ? kEmptyKey : path_.front();
+}
+XKey& XPath::Back()
+{
+    assert(!Empty());
+    return Empty() ? kEmptyKey : path_.back();
+}
 XKey XPath::PopBack()
 {
+    assert(!path_.empty());
     if (path_.empty())
-        return empty_key;
+        return kEmptyKey;
     XKey key = path_.back();
     path_.pop_back();
     return key;
 }
-
 XKey XPath::PopFront()
 {
+    assert(!path_.empty());
     if (path_.empty())
-        return empty_key;
+        return kEmptyKey;
     XKey key = path_.front();
     path_.pop_front();
     return key;
@@ -76,16 +87,12 @@ XPath XPath::PopFront(const size_t _elements)
         removed.push_back(std::move(path_.front()));
         path_.pop_front();
     }
-    return std::move(removed);
+    return XPath {std::move(removed)};
 }
 
 bool XPath::operator<(const XPath& _other) const
 {
-    for (size_t z = 0; z < std::min(path_.size(), _other.Size()); ++z)
-        if (path_.at(z) < _other.At(z))
-            return true;
-
-    return path_.size() < _other.Size();
+    return std::lexicographical_compare(path_.begin(), path_.end(), _other.path_.begin(), _other.path_.end());
 }
 
 bool XPath::operator==(const XPath& _other) const
@@ -102,10 +109,10 @@ bool XPath::operator==(const XPath& _other) const
 
 bool XPath::operator!=(const XPath& _other) const { return !(_other == (*this)); }
 
-XKey XPath::At(size_t _idx) const
+const XKey& XPath::At(size_t _idx) const
 {
     if (_idx >= path_.size())
-        return empty_key;
+        return kEmptyKey;
     return path_.at(_idx);
 }
 
@@ -123,7 +130,7 @@ XKey XPath::At(size_t _idx) const
         auto pos_end = _str.find(xnode::kKeyBraceClose);
 
         // check for index e.g. [123]
-        if (!xnode::kStringKeyInBraces || std::isdigit(_str[1])) {
+        if (!xnode::kStringKeyInBraces || std::isdigit(static_cast<unsigned char>(_str[1]))) {
             // Do not expect index more than max_int
             size_t key_idx = (size_t)std::atoi(_str.data() + 1);
             if (pos_end == std::string_view::npos || pos_end + xnode::kKeyBraceClose.length() >= _str.length())
@@ -154,6 +161,12 @@ XKey XPath::At(size_t _idx) const
         return {_str.substr(0, pos_dots), {}};
 
     return {_str.substr(0, pos_dots), _str.substr(pos_dots + xnode::kKeyDelimiter.length())};
+}
+
+void XPath::_add_keys(XPath&& _path)
+{
+    path_.insert(path_.end(), std::make_move_iterator(_path.path_.begin()), std::make_move_iterator(_path.path_.end()));
+    _path.path_.clear();
 }
 
 void XPath::_add_keys_str(std::string&& _str)

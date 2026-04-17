@@ -4,10 +4,46 @@
 
 namespace xsdk {
 
+size_t xnode::ForEach(const INode* const                                        _node_p,
+                      const bool                                                _callback_for_nodes,
+                      const std::function<bool(const XPath&, const XValueRT&)>& _pf_on_each,
+                      const XPath&                                              _path_prefix)
+{
+    if (!_node_p)
+        return 0;
+
+    size_t counter = 0;
+    auto   path    = _path_prefix;
+    path.PushBack(std::string {});
+
+    std::vector<std::pair<XKey, INode::SPtrC>> nodes;
+    _node_p->BulkGetAll([&](const XKey& key, const XValueRT& val) {
+        bool stop_or_skip = false;
+        path.Back()       = key;
+        auto node_sp      = val.QueryPtrC<INode>();
+        if (!node_sp || _callback_for_nodes) {
+            ++counter;
+            stop_or_skip = _pf_on_each(path, val);
+        }
+
+        if (node_sp && !stop_or_skip)
+            nodes.push_back({key, node_sp});
+
+        return (stop_or_skip && !node_sp) ? OnCopyRes::Stop : OnCopyRes::Skip;
+    });
+
+    for (const auto& [node_key, node] : nodes) {
+        path.Back() = node_key;
+        counter += xnode::ForEach(node.get(), _callback_for_nodes, _pf_on_each, path);
+    }
+
+    return counter;
+}
+
 int32_t xnode::Compare(
     const INode::SPtrC&                                                                            _node_left,
     const INode::SPtrC&                                                                            _node_right,
-    bool                                                                                           _nodes_unwrap,
+    const bool                                                                                     _nodes_unwrap,
     const std::function<bool(const INode::SPtrC&, const XKey&, const XValueRT&, const XValueRT&)>& _pf_on_different)
 {
     if (!_node_left || !_node_right)
@@ -72,7 +108,7 @@ int32_t xnode::Compare(
     while (it_right != values_right.end()) {
         if (!_pf_on_different || _pf_on_different(_node_left, it_right->first, XValue(), it_right->second))
             return -1;
-       
+
         ++it_right;
     }
 

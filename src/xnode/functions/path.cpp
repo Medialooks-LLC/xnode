@@ -50,9 +50,9 @@ INode::SPtr xnode::NodeGet(const INode::SPtr&                   _node_this,
     while (node_dest && _path.Size() > 1) {
         auto key_node = _path.PopFront();
         node_dest     = xnode::NodeGetByKey(node_dest.get(),
-                                        key_node,
-                                        create_nodes ? XKeyToNodeType::Match(_path.At(0)) : std::nullopt,
-                                        false);
+                                            key_node,
+                                            create_nodes ? XKeyToNodeType::Match(_path.At(0)) : std::nullopt,
+                                            false);
     }
 
     if (!node_dest || _path.Empty())
@@ -293,6 +293,26 @@ std::pair<bool, XValueRT> xnode::Set(const INode::SPtr& _node_this, XPath&& _pat
         return {};
 
     return node_dest->Set(key_dest, std::move(_val));
+}
+
+std::pair<bool, XValueRT> xnode::Set(INode* const _node_this_p, XPath&& _path, XValue&& _val)
+{
+    assert(!_path.Empty());
+    if (_path.Empty())
+        return {};
+
+    const auto key_dest = _path.PopBack();
+
+    INode::SPtr node_dest; // For keep refs
+    auto*       node_p = _node_this_p;
+    if (!_path.Empty()) {
+        node_dest = xnode::NodeGet(_node_this_p, std::move(_path), XKeyToNodeType::Match(key_dest));
+        node_p    = node_dest.get();
+    }
+    if (!node_p)
+        return {};
+
+    return node_p->Set(key_dest, std::move(_val));
 }
 
 std::pair<bool, XValueRT> xnode::NodeSet(XValueRT& _node_value, XPath&& _path, XValue&& _val)

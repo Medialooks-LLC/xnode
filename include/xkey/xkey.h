@@ -72,12 +72,12 @@ public:
      * @brief Constructor from int64_t.
      * @param _idx The int64_t to initialize the XKey with.
      */
-    XKey(int64_t _idx) : XKeyVariant((size_t)_idx) {}
+    XKey(int64_t _idx) : XKeyVariant((size_t)std::max<int64_t>(0, _idx)) { assert(_idx >= 0); }
     /**
      * @brief Constructor from int32_t.
      * @param _idx The int32_t to initialize the XKey with.
      */
-    XKey(int32_t _idx) : XKeyVariant((size_t)_idx) {}
+    XKey(int32_t _idx) : XKeyVariant((size_t)std::max(0, _idx)) { assert(_idx >= 0); }
     /**
      * @brief Constructor from uint32_t.
      * @param _idx The uint32_t to initialize the XKey with.
@@ -88,6 +88,7 @@ public:
      * @param _idx The size_t to initialize the XKey with.
      */
     XKey(size_t _idx) : XKeyVariant(_idx) {}
+
     ///@}
 
     ///@name Constructors from strings

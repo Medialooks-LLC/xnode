@@ -589,6 +589,23 @@ TEST(xvalue_tests, rt_test)
     EXPECT_EQ(val_no_ts.Timestamp(), kAbsentRT);
 }
 
+TEST(xvalue_tests, rt_test_set)
+{
+    using XValueRT = XTimed<XValue, xnode::UniqueClock<>>;
+
+    XValueRT val_with_ts(100);
+    auto     ts = val_with_ts.TimeElapsed();
+    EXPECT_LT(ts, XValueRT::MsecToTicks(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ts = val_with_ts.TimeElapsed();
+    EXPECT_GT(ts, XValueRT::MsecToTicks(99));
+    EXPECT_LT(ts, XValueRT::MsecToTicks(150));
+
+    val_with_ts = XValue(123);
+    ts          = val_with_ts.TimeElapsed();
+    EXPECT_LT(ts, XValueRT::MsecToTicks(10));
+}
+
 // TEST(modern_tests, perf_clock)
 //{
 //     xbase::clock_cpp clockTest;
