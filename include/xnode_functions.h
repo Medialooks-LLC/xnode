@@ -846,11 +846,46 @@ std::optional<TEnum> LoadEnum(const INode* _node_p, const XKey& _key, TEnum* _ou
     return val;
 }
 
+/**
+ * @brief Parses a VideoSDK-style parameter string into XNode.
+ *
+ * @param _param_str Input parameter string.
+ * @param _keep_string_values If true, keep all parsed values as strings.
+ * @param _value_for_flags Optional value assigned to standalone flags.
+ *                         If XValue is kEmpty (default-constructed), flags are ignored.
+ * @return Pair of:
+ *         - created node;
+ *         - low-level parse result from xbase::ParseParamString(), including
+ *           parsed items, flags, errors, and optional owned input storage.
+ *
+ * @details
+ * Conversion rules:
+ * - `key=value` inserts an item into the resulting node;
+ * - `flag` is ignored if _value_for_flags is kEmpty;
+ * - `flag` is inserted with _value_for_flags otherwise;
+ * - quoted values are always kept as strings;
+ * - if _keep_string_values is true, all values are kept as strings;
+ * - unquoted values may be auto-converted via XValue::FromString();
+ * - the latest value overwrites the previous one for the same key;
+ * - XPath syntax is supported in keys, e.g. `parent::child=value` creates nested nodes;
+ * - empty input returns an empty map node.
+ *
+ * Notes:
+ * - the returned xbase::ParamParseResult preserves parser errors and source-backed
+ *   string views from the low-level parser;
+ * - if copy_input was enabled in the low-level parser, the returned parse result
+ *   owns the backing storage for its string views;
+ * - node construction uses only successfully parsed items and, optionally, flags.
+ */
+std::pair<INode::SPtr, xbase::ParamParseResult> ParseParamString(const std::string_view _param_str,
+                                                                 const bool             _keep_string_values,
+                                                                 const XValue           _value_for_flags = {});
+
 } // namespace xsdk::xnode
 
 // Utility functions, move to separate file ?
 namespace xsdk::xnode::utility {
-// Return map of {child, parent} nodes with improper parents
+
 /**
  * @brief Checks for improperly connected parents in the nodes tree.
  * @details This function recursively checks for improperly connected parents of a given node and stores them in the
@@ -858,7 +893,7 @@ namespace xsdk::xnode::utility {
  * @param _root The root node of the subtree to check.
  * @param _include_const If true, also check const nodes.
  * @param _improper_map A map to store nodes with improper parents.
- * @return The updated _improper_map containing the nodes with improper parents.
+ * @return The updated _improper_map {child, parent} containing the nodes with improper parents.
  */
 std::map<XValueRT, XValueRT> ParentsCheck(
     const XValue&                  _root,

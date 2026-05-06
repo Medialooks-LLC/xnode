@@ -31,8 +31,10 @@ INode::SPtr xnode::CreateOrClone(const INode::SPtrC& _try_node,
                                  INode::NodeType     _type,
                                  std::string_view    _name /*= {}*/)
 {
-    if (_try_node && _try_node->Type() == _type)
-        return xnode::Clone(_try_node, _clone_nodes);
+    if (_try_node && _try_node->Type() == _type) {
+        auto cloned_name = _name.empty() ? std::optional<std::string_view>() : std::optional<std::string_view>(_name);
+        return xnode::Clone(_try_node, _clone_nodes, {}, cloned_name);
+    }
 
     return xnode::Create(_type, _name);
 }

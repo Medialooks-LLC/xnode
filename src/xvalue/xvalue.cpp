@@ -1,9 +1,13 @@
 #include "xvalue/xvalue.h"
 
 #include <cassert>
+#include <charconv>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <locale>
+#include <sstream>
 
 namespace xsdk {
 
@@ -340,8 +344,8 @@ inline bool XValue::IsNumberConvertable_(const std::string* _p_str)
     while (std::isspace(static_cast<uint8_t>(*psz)))
         ++psz;
 
-    // Alow '-' & '.'
-    if (*psz == '-' || *psz == '.')
+    // Alow '+', '-', '.'
+    if (*psz == '+' || *psz == '-' || *psz == '.')
         ++psz;
 
     // Have to be digit
@@ -458,6 +462,144 @@ std::optional<std::string_view> XValue::OptionalGet<std::string_view>(
         return StringView();
 
     return _default;
+}
+
+namespace {
+
+    bool ParseBoolExact(const std::string_view _str, bool* const _value_p)
+    {
+        if (xbase::strings::StrCmpI(_str, "true") == 0) {
+            *_value_p = true;
+            return true;
+        }
+
+        if (xbase::strings::StrCmpI(_str, "false") == 0) {
+            *_value_p = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool ParseIntValue(const std::string_view _str, XValue* const _value_p)
+    {
+        assert(_value_p);
+        if (_str.empty())
+            return false;
+
+        const auto*       psz     = _str.data();
+        const auto* const psz_end = _str.data() + _str.size();
+
+        // skip spaces
+        while (psz <= psz_end && std::isspace(static_cast<uint8_t>(*psz)))
+            ++psz;
+
+        // Skip leading '+'
+        if (psz < psz_end && *psz == '+')
+            ++psz;
+
+        // Check for base 16
+        int32_t base = 10;
+        if (psz + 2 <= psz_end && psz[0] == '0' && (psz[1] == 'x' || psz[1] == 'X')) {
+            base = 16;
+            psz += 2;
+        }
+        else if (psz < psz_end && *psz == '-') {
+            int64_t parsed   = {};
+            auto [p_end, ec] = std::from_chars(psz, psz_end, parsed, base);
+            if (ec != std::errc() || p_end != psz_end)
+                return false;
+
+            *_value_p = parsed;
+            return true;
+        }
+
+        if (psz >= psz_end)
+            return false;
+
+        uint64_t parsed  = {};
+        auto [p_end, ec] = std::from_chars(psz, psz_end, parsed, base);
+        if (ec != std::errc() || p_end != psz_end)
+            return false;
+
+        if (parsed <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) && base == 10)
+            *_value_p = static_cast<int64_t>(parsed);
+        else
+            *_value_p = static_cast<uint64_t>(parsed);
+
+        return true;
+    }
+
+#ifdef __APPLE__
+    bool ParseDoubleExact(const std::string_view _str, double* const _value_p)
+    {
+        if (!_value_p)
+            return false;
+        if (_str.empty())
+            return false;
+
+        std::istringstream in {std::string(_str)};
+        in.imbue(std::locale::classic());
+
+        double parsed = 0.0;
+        in >> parsed;
+
+        if (in.fail() || !in.eof())
+            return false;
+
+        *_value_p = parsed;
+        return true;
+    }
+#else
+    bool ParseDoubleExact(const std::string_view _str, double* const _value_p)
+    {
+        if (_str.empty())
+            return false;
+
+        const auto*       psz     = _str.data();
+        const auto* const psz_end = _str.data() + _str.size();
+
+        // skip spaces
+        while (psz <= psz_end && std::isspace(static_cast<uint8_t>(*psz)))
+            ++psz;
+
+        // Skip leading '+'
+        if (psz < psz_end && *psz == '+')
+            ++psz;
+
+        if (psz >= psz_end)
+            return false;
+
+        double parsed    = 0.0;
+        auto [p_end, ec] = std::from_chars(psz, psz_end, parsed);
+        if (ec != std::errc() || p_end != psz_end)
+            return false;
+
+        *_value_p = parsed;
+        return true;
+    }
+#endif
+
+} // namespace
+
+XValue XValue::FromString(const std::string_view _str)
+{
+    if (_str.empty())
+        return XValue(_str);
+
+    bool bool_value = false;
+    if (ParseBoolExact(_str, &bool_value))
+        return XValue(bool_value);
+
+    XValue int_value;
+    if (ParseIntValue(_str, &int_value))
+        return int_value;
+
+    double double_value = 0.0;
+    if (ParseDoubleExact(_str, &double_value))
+        return XValue(double_value);
+
+    return XValue(_str);
 }
 
 } // namespace xsdk

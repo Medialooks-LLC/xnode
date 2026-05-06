@@ -309,6 +309,30 @@ public:
     template <typename TGet>
     [[nodiscard]] std::optional<TGet> OptionalGet(const std::optional<TGet> _default = {}) const;
 
+    /**
+     * @brief Converts a string to the most appropriate scalar XValue type.
+     *
+     * @param _str Source string.
+     * @return Parsed bool / int64_t / uint64_t / double / string value.
+     *
+     * @details
+     * Conversion is attempted in the following order:
+     * - bool (`true` / `false`, case-insensitive)
+     * - signed integer in decimal form
+     * - unsigned integer in decimal form, or hexadecimal form with `0x` prefix
+     * - double-precision floating-point value
+     * - string if no numeric or boolean conversion succeeds
+     *
+     * Notes:
+     * - quoted-string handling is not performed here;
+     * - an empty input remains a string;
+     * - integer parsing supports decimal and hexadecimal formats;
+     * - hexadecimal values with `0x` prefix are always treated as unsigned integers,
+     *   even when the parsed value fits into int64_t;
+     * - positive decimal integers that fit into int64_t are returned as int64_t.
+     */
+    [[nodiscard]] static XValue FromString(const std::string_view _str);
+
 private:
     static bool IsNumberConvertable_(const std::string* _p_str);
 };
