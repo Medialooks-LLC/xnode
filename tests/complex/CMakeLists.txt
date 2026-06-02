@@ -23,6 +23,10 @@ add_executable(${PROJECT_NAME}
                ${FILES}
 )
 
+if(WIN32)
+    target_link_options(${PROJECT_NAME} PRIVATE /IGNORE:4099)
+endif()
+
 target_link_libraries(${PROJECT_NAME}
                         GTest::gtest_main
                         xnode
@@ -30,3 +34,4 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${FILES})
+
