@@ -1,5 +1,7 @@
 #include "xvalue/xvalue.h"
 
+#include "xbase/strings.h"
+
 #include <cassert>
 #include <charconv>
 #include <cmath>
@@ -468,12 +470,12 @@ namespace {
 
     bool ParseBoolExact(const std::string_view _str, bool* const _value_p)
     {
-        if (xbase::strings::StrCmpI(_str, "true") == 0) {
+        if (xbase::strings::CmpI(_str, "true") == 0) {
             *_value_p = true;
             return true;
         }
 
-        if (xbase::strings::StrCmpI(_str, "false") == 0) {
+        if (xbase::strings::CmpI(_str, "false") == 0) {
             *_value_p = false;
             return true;
         }

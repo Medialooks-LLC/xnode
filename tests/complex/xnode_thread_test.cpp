@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <atomic>
+#include <iterator>
 #include <thread>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -150,8 +151,8 @@ TEST(xnode_thread_tests, thread_node_parents_ops)
         XValue prev;
         while (!stop) {
 
-            size_t idx1 = rand() % SIZEOF_ARRAY(nodes);
-            size_t idx2 = rand() % SIZEOF_ARRAY(nodes);
+            size_t idx1 = rand() % std::size(nodes);
+            size_t idx2 = rand() % std::size(nodes);
 
             switch (rand() % 12) {
                 case 0:
@@ -193,7 +194,7 @@ TEST(xnode_thread_tests, thread_node_parents_ops)
         }
     };
 
-    for (size_t z = 0; z < SIZEOF_ARRAY(nodes); ++z)
+    for (size_t z = 0; z < std::size(nodes); ++z)
         nodes[z]->ParentSet(node_map_sp);
 
     size_t                   threads = 8;
@@ -244,8 +245,8 @@ TEST(xnode_thread_tests, thread_node_parents_ops2)
         XValue prev;
         while (!stop) {
 
-            size_t idx1 = rand() % SIZEOF_ARRAY(nodes);
-            size_t idx2 = rand() % SIZEOF_ARRAY(nodes);
+            size_t idx1 = rand() % std::size(nodes);
+            size_t idx2 = rand() % std::size(nodes);
 
             switch (rand() % 12) {
                 case 0:
@@ -295,7 +296,7 @@ TEST(xnode_thread_tests, thread_node_parents_ops2)
         }
     };
 
-    for (size_t z = 0; z < SIZEOF_ARRAY(nodes); ++z)
+    for (size_t z = 0; z < std::size(nodes); ++z)
         nodes[z]->ParentSet(node_map_sp);
 
     size_t                   threads = 8;

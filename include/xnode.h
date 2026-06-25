@@ -8,9 +8,11 @@
 #include "xvalue/xvalue_rt.h"
 
 #include "xconstant.h"
+#include "xnode_auto_save.h"
 #include "xnode_factory.h"
 #include "xnode_functions.h"
 #include "xnode_interfaces.h"
 #include "xnode_json.h"
+#include "xnode_subtree_subscription.h"
 #include "xnode_xml.h"
 #include "xstring.h"

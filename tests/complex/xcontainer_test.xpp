@@ -9,9 +9,7 @@
 // TEMP while not impl xobject_factory
 #include "../lib/src/xobject/xobject_impl.h"
 
-#include "../../include/platform.h"
-#include "../../include/xutils.h"
-#include "../../include/xutils/utils_platform.h"
+#include "xbase.h"
 
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -76,7 +74,6 @@
 //} // namespace xsdk
 
 using namespace xsdk;
-using namespace xutils;
 
 // NOLINTBEGIN(*)
 
@@ -100,11 +97,11 @@ void map_test(TMap*                                                             
               std::function<void(const typename TMap::key_type&, const typename TMap::mapped_type&)> _pfSet,
               std::function<std::string_view(const typename TMap::mapped_type&)>                     _pfGet)
 {
-    xutils::clock_cpp clockTest;
+    xbase::ClockCpp clockTest;
 
     for (size_t z = 0; z < _zTests; ++z) {
-        size_t idx  = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
-        size_t idx2 = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
+        size_t idx  = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
+        size_t idx2 = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
         _pfSet(_vecKeysVal[idx].first, _vecKeysVal[idx2].second);
     }
 
@@ -113,7 +110,7 @@ void map_test(TMap*                                                             
         << " set @ msec:" << clockTest.GetStepMsec(true) << "  ppms:" << ppms << std::endl;
 
     for (size_t z = 0; z < _zTests; ++z) {
-        size_t idx = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
+        size_t idx = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
         _pMapCopy->erase(_vecKeysVal[idx].first);
         _pMapCopy->emplace(_vecKeysVal[idx].first, _pMapTest->at(_vecKeysVal[idx].first));
     }
@@ -124,8 +121,8 @@ void map_test(TMap*                                                             
 
     _pMapCopy->clear();
     for (size_t z = 0; z < _zTests; ++z) {
-        size_t idx  = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
-        size_t idx2 = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
+        size_t idx  = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
+        size_t idx2 = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
         _pMapCopy->emplace(_vecKeysVal[idx].first, _pMapTest->at(_vecKeysVal[idx2].first));
     }
 
@@ -135,7 +132,7 @@ void map_test(TMap*                                                             
 
     std::deque<std::string_view> deqResult;
     for (size_t z = 0; z < _zTests; ++z) {
-        size_t idx = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
+        size_t idx = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
         deqResult.push_back(_pfGet(_pMapTest->at(_vecKeysVal[idx].first)));
     }
     ppms = _zTests / clockTest.GetStepMsec(false);
@@ -144,7 +141,7 @@ void map_test(TMap*                                                             
 
     std::deque<typename TMap::mapped_type> deqResult2;
     for (size_t z = 0; z < _zTests; ++z) {
-        size_t idx = (size_t)xutils::rand_int((double)_vecKeysVal.size() - 1);
+        size_t idx = (size_t)xbase::random::Int((double)_vecKeysVal.size() - 1);
         deqResult2.push_back(_pMapTest->at(_vecKeysVal[idx].first));
     }
     ppms = _zTests / clockTest.GetStepMsec(false);
@@ -164,7 +161,7 @@ TEST(modern_tests, perf_maps)
 #endif
     std::vector<std::pair<std::string, std::string>> vecKV;
     for (size_t z = 0; z < zKeys; ++z) {
-        vecKV.emplace_back("key_" + xutils::unique_str(8), "value_string_key:" + xutils::unique_str(8));
+        vecKV.emplace_back("key_" + xbase::random::UniqueString(8), "value_string_key:" + xbase::random::UniqueString(8));
     }
 
     std::map<std::string_view, std::string_view> mapSV_SV[2];
@@ -270,91 +267,91 @@ TEST(modern_tests, perf_xkey)
 #endif
     std::vector<std::pair<std::string, std::string>> vecKV;
     for (size_t z = 0; z < zKeys; ++z) {
-        vecKV.emplace_back("key_" + xutils::unique_str(8), "value_string_key:" + xutils::unique_str(8));
+        vecKV.emplace_back("key_" + xbase::random::UniqueString(8), "value_string_key:" + xbase::random::UniqueString(8));
     }
 
-    xutils::sliding_avg_ex avgInfo[4];
+    xbase::averages::SlidingAverageEx avgInfo[4];
     for (size_t xx = 0; xx < zIterations; ++xx) {
 
         {
             auto upContainer = std::make_unique<impl::xcontainer_map>();
 
-            xutils::clock_cpp clockTest;
+            xbase::ClockCpp clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
                 upContainer->set(vecKV[idx].first, vecKV[idx2].second, nullptr);
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[0].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[0].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[0].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[0].Info().min;
             std::cout << "xkey upContainer->set() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].Info().ToString() << std::endl;
         }
 
         auto upContainer = std::make_unique<impl::xcontainer_map>();
 
         {
-            xutils::clock_cpp clockTest;
+            xbase::ClockCpp clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
                 upContainer->emplace(vecKV[idx].first, vecKV[idx2].second, nullptr);
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[1].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[1].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[1].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[1].Info().min;
             std::cout << "xkey upContainer->emplace() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms
                       << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].Info().ToString() << std::endl;
         }
 
         {
             std::deque<xvalue> deqTest;
-            xutils::clock_cpp  clockTest;
+            xbase::ClockCpp  clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
                 auto   res  = upContainer->at(vecKV[idx].first);
                 deqTest.push_back(res.value_or(xvalue()));
                 if (deqTest.size() > 32)
                     deqTest.pop_front();
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[2].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[2].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[2].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[2].Info().min;
             std::cout << "xkey upContainer->at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].Info().ToString() << std::endl;
         }
 
         {
             auto upContainer = std::make_unique<impl::xcontainer_map>();
 
             std::deque<xvalue> deqTest;
-            xutils::clock_cpp  clockTest;
+            xbase::ClockCpp  clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
                 auto   res  = upContainer->at(vecKV[idx].first);
                 deqTest.push_back(res.value_or(xvalue()));
                 if (deqTest.size() > 32)
                     deqTest.pop_front();
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[3].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[3].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[3].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[3].Info().min;
             std::cout << "xkey upContainer(empty)->at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].Info().ToString() << std::endl;
         }
     }
 
@@ -375,90 +372,90 @@ TEST(modern_tests, perf_xkey)
 //#endif
 //    std::vector<std::pair<std::string, std::string>> vecKV;
 //    for (size_t z = 0; z < zKeys; ++z) {
-//        vecKV.emplace_back("key_" + xutils::unique_str(8), "value_string_key:" + xutils::unique_str(8));
+//        vecKV.emplace_back("key_" + xbase::random::UniqueString(8), "value_string_key:" + xbase::random::UniqueString(8));
 //    }
 //
-//    xutils::sliding_avg_ex avgInfo[4];
+//    xbase::averages::SlidingAverageEx avgInfo[4];
 //    for (size_t xx = 0; xx < zIterations; ++xx) {
 //
 //        {
 //            auto upContainer = std::make_unique<xcontainer_map<ikey_uptr, xvalue_rt>>();
 //
-//            xutils::clock_cpp clockTest;
+//            xbase::ClockCpp clockTest;
 //            for (size_t z = 0; z < zTestsPerIteration; ++z) {
-//                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-//                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+//                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+//                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
 //                upContainer->set(key_match::xkey_match(vecKV[idx].first), vecKV[idx2].second, nullptr);
 //
 //                if ((z + 1) % zTestPerAvg == 0)
-//                    avgInfo[0].add_value(clockTest.GetStepMsec(true));
+//                    avgInfo[0].AddValue(clockTest.GetStepMsec(true));
 //            }
 //
 //            auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-//            auto max_ppms = zTestPerAvg / avgInfo[0].info().min;
+//            auto max_ppms = zTestPerAvg / avgInfo[0].Info().min;
 //            std::cout << "ikey upContainer->set() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].info().to_string() << std::endl;
+//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].Info().ToString() << std::endl;
 //        }
 //
 //        auto upContainer = std::make_unique<xcontainer_map<ikey_uptr, xvalue_rt>>();
 //        {
-//            xutils::clock_cpp clockTest;
+//            xbase::ClockCpp clockTest;
 //            for (size_t z = 0; z < zTestsPerIteration; ++z) {
-//                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-//                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+//                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+//                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
 //                upContainer->emplace(key_match::xkey_match(vecKV[idx].first), vecKV[idx2].second, nullptr);
 //
 //                if ((z + 1) % zTestPerAvg == 0)
-//                    avgInfo[1].add_value(clockTest.GetStepMsec(true));
+//                    avgInfo[1].AddValue(clockTest.GetStepMsec(true));
 //            }
 //
 //            auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-//            auto max_ppms = zTestPerAvg / avgInfo[1].info().min;
+//            auto max_ppms = zTestPerAvg / avgInfo[1].Info().min;
 //            std::cout << "ikey upContainer->emplace() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms
 //                      << std::endl
-//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].info().to_string() << std::endl;
+//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].Info().ToString() << std::endl;
 //        }
 //
 //        {
 //            std::deque<xvalue> deqTest;
-//            xutils::clock_cpp  clockTest;
+//            xbase::ClockCpp  clockTest;
 //            for (size_t z = 0; z < zTestsPerIteration; ++z) {
-//                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
+//                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
 //                auto   res  = upContainer->at(key_match::xkey_match(vecKV[idx].first));
 //                deqTest.push_back(res.value_or(xvalue()));
 //                if (deqTest.size() > 32)
 //                    deqTest.pop_front();
 //
 //                if ((z + 1) % zTestPerAvg == 0)
-//                    avgInfo[2].add_value(clockTest.GetStepMsec(true));
+//                    avgInfo[2].AddValue(clockTest.GetStepMsec(true));
 //            }
 //
 //            auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-//            auto max_ppms = zTestPerAvg / avgInfo[2].info().min;
+//            auto max_ppms = zTestPerAvg / avgInfo[2].Info().min;
 //            std::cout << "ikey upContainer->at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].info().to_string() << std::endl;
+//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].Info().ToString() << std::endl;
 //        }
 //
 //        {
 //            auto upContainer = std::make_unique<xcontainer_map<ikey_uptr, xvalue_rt>>();
 //
 //            std::deque<xvalue> deqTest;
-//            xutils::clock_cpp  clockTest;
+//            xbase::ClockCpp  clockTest;
 //            for (size_t z = 0; z < zTestsPerIteration; ++z) {
-//                size_t idx = (size_t)xutils::rand_int((double)zKeys - 1);
+//                size_t idx = (size_t)xbase::random::Int((double)zKeys - 1);
 //                auto   res = upContainer->at(key_match::xkey_match(vecKV[idx].first));
 //                deqTest.push_back(res.value_or(xvalue()));
 //                if (deqTest.size() > 32)
 //                    deqTest.pop_front();
 //
 //                if ((z + 1) % zTestPerAvg == 0)
-//                    avgInfo[3].add_value(clockTest.GetStepMsec(true));
+//                    avgInfo[3].AddValue(clockTest.GetStepMsec(true));
 //            }
 //
 //            auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-//            auto max_ppms = zTestPerAvg / avgInfo[3].info().min;
+//            auto max_ppms = zTestPerAvg / avgInfo[3].Info().min;
 //            std::cout << "ikey upContainer(empty)->at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].info().to_string() << std::endl;
+//                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].Info().ToString() << std::endl;
 //        }
 //    }
 //
@@ -479,56 +476,56 @@ TEST(modern_tests, perf_std_map_sv)
 #endif
     std::vector<std::pair<std::string, std::string>> vecKV;
     for (size_t z = 0; z < zKeys; ++z) {
-        vecKV.emplace_back("key_" + xutils::unique_str(8), "value_string_key:" + xutils::unique_str(8));
+        vecKV.emplace_back("key_" + xbase::random::UniqueString(8), "value_string_key:" + xbase::random::UniqueString(8));
     }
 
-    xutils::sliding_avg_ex avgInfo[4];
+    xbase::averages::SlidingAverageEx avgInfo[4];
     for (size_t xx = 0; xx < zIterations; ++xx) {
 
         {
             auto upContainer = std::make_unique<std::map<std::string_view, std::string_view>>();
 
-            xutils::clock_cpp clockTest;
+            xbase::ClockCpp clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
                 (*upContainer)[vecKV[idx].first] = vecKV[idx2].second;
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[0].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[0].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[0].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[0].Info().min;
             std::cout << "std::map<string_view,string_view> set() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[0].Info().ToString() << std::endl;
         }
 
         auto upContainer = std::make_unique<std::map<std::string_view, std::string_view>>();
         {
            
-            xutils::clock_cpp clockTest;
+            xbase::ClockCpp clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
-                size_t idx2 = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
+                size_t idx2 = (size_t)xbase::random::Int((double)zKeys - 1);
                 upContainer->emplace(vecKV[idx].first, vecKV[idx2].second);
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[1].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[1].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[1].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[1].Info().min;
             std::cout << "std::map<string_view,string_view> emplace() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms
                       << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[1].Info().ToString() << std::endl;
         }
 
         {
             std::deque<xvalue> deqTest;
-            xutils::clock_cpp  clockTest;
+            xbase::ClockCpp  clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx = (size_t)xbase::random::Int((double)zKeys - 1);
                 auto   it  = upContainer->find(vecKV[idx].first);
                 auto   res = (it == upContainer->end() ? xvalue() : xvalue(it->second));
                 deqTest.push_back(res);
@@ -536,22 +533,22 @@ TEST(modern_tests, perf_std_map_sv)
                     deqTest.pop_front();
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[2].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[2].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[2].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[2].Info().min;
             std::cout << "std::map<string_view,string_view> at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[2].Info().ToString() << std::endl;
         }
 
         {
             auto               upContainer = std::make_unique<std::map<std::string_view, std::string_view>>();
 
             std::deque<xvalue> deqTest;
-            xutils::clock_cpp  clockTest;
+            xbase::ClockCpp  clockTest;
             for (size_t z = 0; z < zTestsPerIteration; ++z) {
-                size_t idx  = (size_t)xutils::rand_int((double)zKeys - 1);
+                size_t idx  = (size_t)xbase::random::Int((double)zKeys - 1);
                 auto   it  = upContainer->find(vecKV[idx].first);
                 auto   res = (it == upContainer->end() ? xvalue() : xvalue(it->second));
                 deqTest.push_back(res);
@@ -559,13 +556,13 @@ TEST(modern_tests, perf_std_map_sv)
                     deqTest.pop_front();
 
                 if ((z + 1) % zTestPerAvg == 0)
-                    avgInfo[3].add_value(clockTest.GetStepMsec(true));
+                    avgInfo[3].AddValue(clockTest.GetStepMsec(true));
             }
 
             auto ppms     = zTestsPerIteration / clockTest.GetTimeMsec();
-            auto max_ppms = zTestPerAvg / avgInfo[3].info().min;
+            auto max_ppms = zTestPerAvg / avgInfo[3].Info().min;
             std::cout << "std::map<string_view,string_view> empty at() @msec: " << clockTest.GetTimeMsec() << " ppms: " << ppms << std::endl
-                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].info().to_string() << std::endl;
+                      << "    MAX:" << max_ppms << " ppms AVG " << avgInfo[3].Info().ToString() << std::endl;
         }
     }
 

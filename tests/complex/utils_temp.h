@@ -7,10 +7,6 @@
 #include <string_view>
 #include <vector>
 
-#ifndef SIZEOF_ARRAY
-    #define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof((arr)[0]))
-#endif // SIZEOF_ARRAY
-
 namespace xutils_temp {
 
 // ~Uniform [0...1.0]
