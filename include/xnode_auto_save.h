@@ -1,5 +1,6 @@
 #pragma once
 
+#include "xnode_symbols.h"
 #include "xnode_interfaces.h"
 
 #include "xbase/xscheduler.h"
@@ -9,7 +10,7 @@
 
 namespace xsdk::xnode {
 
-class INodeAutoSave: public xbase::PtrBase<INodeAutoSave> {
+class XNODE_API INodeAutoSave: public xbase::PtrBase<INodeAutoSave> {
 public:
     using SavePF = std::function<std::error_code(const INode::SPtrC& _node)>;
 
@@ -70,6 +71,6 @@ struct NodeAutoSaveParams {
     xbase::IWorker::SPtr worker;
 };
 
-INodeAutoSave::SPtr CreateNodeAutoSave(NodeAutoSaveParams&& _params);
+XNODE_API INodeAutoSave::SPtr CreateNodeAutoSave(NodeAutoSaveParams&& _params);
 
 } // namespace xsdk::xnode

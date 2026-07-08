@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../xnode_symbols.h"
 #include "../xstring.h"
 #include "xbase.h"
 #include "xconstant.h"
@@ -31,12 +32,18 @@ using XVariant = std::variant<std::monostate,
                               IObject::SPtrC,
                               IObject::SPtr>;
 
+#ifdef _MSC_VER
+    #pragma warning(push)
+    // Suppress C4251: private STL members don't need a DLL interface.
+    #pragma warning(disable : 4251)
+#endif
+
 /**
  * @brief A utility class used for storing and manipulating values.
  * @details It provides a generic variant type with a number of constructor overloads for common types,
  * as well as a set of utility methods to extract and convert these values.
  */
-class XValue: protected XVariant {
+class XNODE_API XValue: protected XVariant {
 
 public:
     /// @brief The XValue enum defines various value types.
@@ -337,42 +344,46 @@ private:
     static bool IsNumberConvertable_(const std::string* _p_str);
 };
 
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
 // XENUM_OPS32(XValue::ValueType)
 
 template <>
-std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const;
+XNODE_API std::optional<bool> XValue::OptionalGet<bool>(const std::optional<bool> _default) const;
 
 template <>
-std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _default) const;
+XNODE_API std::optional<double> XValue::OptionalGet<double>(const std::optional<double> _default) const;
 
 #ifdef __APPLE__
 template <>
-std::optional<size_t> XValue::OptionalGet<size_t>(const std::optional<size_t> _default) const;
+XNODE_API std::optional<size_t> XValue::OptionalGet<size_t>(const std::optional<size_t> _default) const;
 #endif
 
 template <>
-std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const;
+XNODE_API std::optional<int64_t> XValue::OptionalGet<int64_t>(const std::optional<int64_t> _default) const;
 
 template <>
-std::optional<uint64_t> XValue::OptionalGet<uint64_t>(const std::optional<uint64_t> _default) const;
+XNODE_API std::optional<uint64_t> XValue::OptionalGet<uint64_t>(const std::optional<uint64_t> _default) const;
 
 template <>
-std::optional<int32_t> XValue::OptionalGet<int32_t>(const std::optional<int32_t> _default) const;
+XNODE_API std::optional<int32_t> XValue::OptionalGet<int32_t>(const std::optional<int32_t> _default) const;
 
 template <>
-std::optional<uint32_t> XValue::OptionalGet<uint32_t>(const std::optional<uint32_t> _default) const;
+XNODE_API std::optional<uint32_t> XValue::OptionalGet<uint32_t>(const std::optional<uint32_t> _default) const;
 
 template <>
-std::optional<int16_t> XValue::OptionalGet<int16_t>(const std::optional<int16_t> _default) const;
+XNODE_API std::optional<int16_t> XValue::OptionalGet<int16_t>(const std::optional<int16_t> _default) const;
 
 template <>
-std::optional<uint16_t> XValue::OptionalGet<uint16_t>(const std::optional<uint16_t> _default) const;
+XNODE_API std::optional<uint16_t> XValue::OptionalGet<uint16_t>(const std::optional<uint16_t> _default) const;
 
 template <>
-std::optional<std::string_view> XValue::OptionalGet<std::string_view>(
+XNODE_API std::optional<std::string_view> XValue::OptionalGet<std::string_view>(
     const std::optional<std::string_view> _default) const;
 
 template <>
-std::optional<std::string> XValue::OptionalGet<std::string>(const std::optional<std::string> _default) const;
+XNODE_API std::optional<std::string> XValue::OptionalGet<std::string>(const std::optional<std::string> _default) const;
 
 } // namespace xsdk

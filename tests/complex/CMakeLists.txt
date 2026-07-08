@@ -11,6 +11,12 @@ FILE(GLOB FILES
     *.h
 )
 
+if(DYNAMIC_BUILD)
+    list(FILTER FILES EXCLUDE REGEX ".*/xobject_demo/.*")
+    list(FILTER FILES EXCLUDE REGEX ".*/xnode_test\\.cpp$")
+    list(FILTER FILES EXCLUDE REGEX ".*/xvalue_test\\.cpp$")
+endif()
+
 include_directories(
         ../../include
 )

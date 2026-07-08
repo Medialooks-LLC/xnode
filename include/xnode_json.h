@@ -1,5 +1,6 @@
 #pragma once
 
+#include "xnode_symbols.h"
 #include "xnode_interfaces.h"
 
 #include <memory>
@@ -46,11 +47,11 @@ using OnCustomSerializePf = std::function<XValue(const XKey& _key, const IObject
  *
  * @return Returns a IBuffer::Type::StringView buffer containing the json format representation of the INode object.
  */
-xbase::IBuffer::SPtrC ToJsonBuffer(const XValue&              _root_value,
-                                   const OnCustomSerializePf& _pf_on_custom      = {},
-                                   const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
-                                   const size_t               _indent_char_count = kExportIndentCount,
-                                   const char                 _indent_char       = kExportIndentChar);
+XNODE_API xbase::IBuffer::SPtrC ToJsonBuffer(const XValue&              _root_value,
+                                             const OnCustomSerializePf& _pf_on_custom      = {},
+                                             const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
+                                             const size_t               _indent_char_count = kExportIndentCount,
+                                             const char                 _indent_char       = kExportIndentChar);
 /**
  * @brief Function to convert an INode object to json format string.
  *
@@ -62,11 +63,11 @@ xbase::IBuffer::SPtrC ToJsonBuffer(const XValue&              _root_value,
  *
  * @return Returns a std::string containing the json format representation of the INode object.
  */
-std::string ToJson(const XValue&              _root_value,
-                   const OnCustomSerializePf& _pf_on_custom      = {},
-                   const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
-                   const size_t               _indent_char_count = kExportIndentCount,
-                   const char                 _indent_char       = kExportIndentChar);
+XNODE_API std::string ToJson(const XValue&              _root_value,
+                             const OnCustomSerializePf& _pf_on_custom      = {},
+                             const JsonFormat           _json_format       = JsonFormat::kOneLineArrays,
+                             const size_t               _indent_char_count = kExportIndentCount,
+                             const char                 _indent_char       = kExportIndentChar);
 
 /**
  * @brief A type alias for a handle custom objects during INode json deserialization with folowing signature, return
@@ -91,11 +92,12 @@ using OnCustomDeserializePf = std::function<XValue(const XKey& _key, const XValu
  *
  * @note A zero error position means that the import from JSON was successful.
  */
-std::pair<INode::SPtr, size_t> FromJson(const std::string_view                 _json,
-                                        const std::string_view                 _name                  = {},
-                                        const OnCustomDeserializePf&           _on_custom_deserialize = {},
-                                        const std::optional<XValue::ValueType> _callback_types_mask   = {},
-                                        const std::optional<xbase::Uid>        _node_uid              = {});
+XNODE_API std::pair<INode::SPtr, size_t> FromJson(
+    const std::string_view                 _json,
+    const std::string_view                 _name                  = {},
+    const OnCustomDeserializePf&           _on_custom_deserialize = {},
+    const std::optional<XValue::ValueType> _callback_types_mask   = {},
+    const std::optional<xbase::Uid>        _node_uid              = {});
 
 ///@}
 

@@ -2,6 +2,7 @@
 
 #include "xconstant.h"
 #include "xnode_interfaces.h"
+#include "xnode_symbols.h"
 
 #include <xbase.h>
 
@@ -17,7 +18,7 @@ namespace xsdk::xnode {
  * This function initializes the Xerces-C++ platform, which is a prerequisite for working with XML documents.
  * @return Returns true if the initialization was successful, false otherwise.
  */
-bool XmlPlatformInit();
+XNODE_API bool XmlPlatformInit();
 
 /**
  * @brief A function that converts an XML string to an INode object.
@@ -29,11 +30,11 @@ bool XmlPlatformInit();
  * @return std::pair containing the parsed node and an error line position, if an error occurred.
  * @note If used without a previous call of @ref XmlPlatformInit, lazy initialization will be used.
  */
-std::pair<INode::SPtr, size_t> FromXml(std::string_view _xml,
-                                       uint64_t         _uid              = 0,
-                                       std::string_view _name             = {},
-                                       std::string_view _attribute_prefix = kXMLAttributePrefix,
-                                       std::string_view _value_name       = kXMLValueName);
+XNODE_API std::pair<INode::SPtr, size_t> FromXml(std::string_view _xml,
+                                                 uint64_t         _uid              = 0,
+                                                 std::string_view _name             = {},
+                                                 std::string_view _attribute_prefix = kXMLAttributePrefix,
+                                                 std::string_view _value_name       = kXMLValueName);
 
 /**
  * @brief An enumeration class for specifying the format of the output XML.
@@ -68,13 +69,13 @@ using OnCopyPF = const std::function<OnCopyRes(const INode::SPtrC&, const XKey&,
  * @return The resulting XML string.
  * @note If used without a previous call of @ref XmlPlatformInit, lazy initialization will be used.
  */
-std::string ToXml(const INode::SPtrC& _node_this,
-                  OnCopyPF&           _pf_on_item        = nullptr,
-                  XmlFormat           _xml_format        = XmlFormat::kOneLine,
-                  std::string_view    _attribute_prefix  = kXMLAttributePrefix,
-                  std::string_view    _value_name        = kXMLValueName,
-                  size_t              _indent_char_count = kExportIndentCount,
-                  char                _indent_char       = kExportIndentChar);
+XNODE_API std::string ToXml(const INode::SPtrC& _node_this,
+                            OnCopyPF&           _pf_on_item        = nullptr,
+                            XmlFormat           _xml_format        = XmlFormat::kOneLine,
+                            std::string_view    _attribute_prefix  = kXMLAttributePrefix,
+                            std::string_view    _value_name        = kXMLValueName,
+                            size_t              _indent_char_count = kExportIndentCount,
+                            char                _indent_char       = kExportIndentChar);
 
 ///@}
 

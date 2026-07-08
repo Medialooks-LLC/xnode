@@ -1,5 +1,6 @@
 #pragma once
 
+#include "xnode_symbols.h"
 #include "xbase.h"
 #include "xconstant.h"
 #include "xkey/xkey.h"
@@ -17,7 +18,7 @@
 
 namespace xsdk {
 
-class INode: public IObject {
+class XNODE_API INode: public IObject {
 public:
     // Declate shared, unique, weak pts (for override PtrBase<IObject> in base class)
     USING_PTRS(INode)

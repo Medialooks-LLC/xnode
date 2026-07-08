@@ -1,5 +1,6 @@
 #pragma once
 
+#include "xnode_symbols.h"
 #include "xnode_interfaces.h"
 
 #include <cassert>
@@ -15,7 +16,7 @@ namespace xsdk {
  * INodeFactory is an interface for creating INode objects.
  * Derived classes must implement the NodeCreate method to create specific types of INode objects.
  */
-class INodeFactory {
+class XNODE_API INodeFactory {
 
 public:
     /**
@@ -42,6 +43,6 @@ public:
  *
  * @return A pointer to the INodeFactory instance
  */
-INodeFactory* XNodeFactoryGet();
+XNODE_API INodeFactory* XNodeFactoryGet();
 
 } // namespace xsdk

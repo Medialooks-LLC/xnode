@@ -1,5 +1,6 @@
 #pragma once
 
+#include "xnode_symbols.h"
 #include "xnode_interfaces.h"
 
 #include <functional>
@@ -12,7 +13,7 @@ using OnNodeSubtreeChangePF = std::function<void(INode::CallbackReason _reason,
                                                  const XValueRT&       _prev_value,
                                                  const XValueRT&       _new_value)>;
 
-class INodeSubtreeSubscription: public xbase::PtrBase<INodeSubtreeSubscription> {
+class XNODE_API INodeSubtreeSubscription: public xbase::PtrBase<INodeSubtreeSubscription> {
 public:
     virtual ~INodeSubtreeSubscription() = default;
 
@@ -48,6 +49,6 @@ struct NodeSubtreeSubscriptionParams {
     bool subscribe_existing_nodes = true;
 };
 
-INodeSubtreeSubscription::SPtr CreateNodeSubtreeSubscription(NodeSubtreeSubscriptionParams&& _params);
+XNODE_API INodeSubtreeSubscription::SPtr CreateNodeSubtreeSubscription(NodeSubtreeSubscriptionParams&& _params);
 
 } // namespace xsdk::xnode

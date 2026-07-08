@@ -6,14 +6,21 @@
 #include <string_view>
 #include <utility>
 
+#include "../xnode_symbols.h"
 #include "xkey.h"
 
 namespace xsdk {
 
+#ifdef _MSC_VER
+    #pragma warning(push)
+    // Suppress C4251: private STL members don't need a DLL interface.
+    #pragma warning(disable : 4251)
+#endif
+
 /**
  * @brief A deque (double-ended queue) container for XKey objects representing an XPath
  */
-class XPath {
+class XNODE_API XPath {
     std::deque<XKey> path_;
 
     // Empty XKey object.
@@ -158,7 +165,6 @@ public:
     }
     ///@}
 
-
 public:
     /**
      * @brief access to undelying std::vector object for enumerate parts.
@@ -294,5 +300,9 @@ private:
     void _add_keys(const char* _str) { _add_keys_str(std::string(_str)); }
     void _add_keys_str(std::string&& _str);
 };
+
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
 
 } // namespace xsdk

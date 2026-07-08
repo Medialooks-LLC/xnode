@@ -18,15 +18,17 @@ if(DYNAMIC_BUILD)
         SHARED
         ${FILES}
     )
+    target_compile_definitions(${PROJECT_NAME} PRIVATE XNODE_BUILDING_DLL)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
 else()
     add_library(${PROJECT_NAME}
         STATIC
         ${FILES}
     )
-endif()
-
-if(WIN32)
-    set_target_properties(xnode PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC XNODE_STATIC_DEFINE)
 endif()
 
 target_link_libraries(${PROJECT_NAME}

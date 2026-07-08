@@ -3,6 +3,8 @@
 #include "xkey/xkey.h"
 #include "xkey/xpath.h"
 
+#include "xnode_symbols.h"
+
 #include "xvalue/xtimed.h"
 #include "xvalue/xvalue.h"
 #include "xvalue/xvalue_rt.h"

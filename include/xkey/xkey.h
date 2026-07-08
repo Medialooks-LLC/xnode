@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "../xconstant.h"
+#include "../xnode_symbols.h"
 #include "../xstring.h"
 #include "xbase.h"
 
@@ -20,6 +21,12 @@ namespace xsdk {
  */
 using XKeyVariant = std::variant<std::monostate, size_t, std::string_view>;
 
+#ifdef _MSC_VER
+    #pragma warning(push)
+    // Suppress C4251: private STL members don't need a DLL interface.
+    #pragma warning(disable : 4251)
+#endif
+
 // 2Think: maybe just use std::variant<...std::string> ?
 /**
  * @brief The XKey class is a variant wrapper to store different types of keys.
@@ -27,7 +34,7 @@ using XKeyVariant = std::variant<std::monostate, size_t, std::string_view>;
  * The XKey class is a wrapper of @c std::variant which can hold @c std::monostate, @c size_t,
  * @c std::string_view as key.
  */
-class XKey: public XKeyVariant {
+class XNODE_API XKey: public XKeyVariant {
     /**
      * @brief Holder for the owned string.
      */
@@ -204,5 +211,9 @@ private:
     // - could easy mess 'index' with 'IndexGet' and got error.
     size_t Index_() const { return XKeyVariant::index(); }
 };
+
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
 
 } // namespace xsdk
